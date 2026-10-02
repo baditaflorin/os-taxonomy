@@ -125,7 +125,7 @@
             <p class="eyebrow">Local profile</p>
             <h2 id="dialog-title">Add a child</h2>
           </div>
-          <button class="icon-button" value="cancel" aria-label="Close">×</button>
+          <button class="icon-button" value="cancel" formnovalidate aria-label="Close">×</button>
         </div>
         <p class="privacy-note">Profiles and learning progress stay in this browser. Nothing is uploaded.</p>
         <p id="name-once-note" class="name-once-note">Tell us the name once. Every assessment question will use it automatically.</p>
@@ -142,7 +142,7 @@
           <input id="profile-name" maxlength="60" required autocomplete="off" placeholder="Child's first name" />
         </label>
         <div id="profile-dialog-actions" class="dialog-actions">
-          <button value="cancel" class="button secondary">Cancel</button>
+          <button value="cancel" formnovalidate class="button secondary">Cancel</button>
           <button id="save-profile" value="default" class="button primary">Save profile</button>
         </div>
         <div id="profile-danger" class="danger-zone" hidden>
@@ -157,6 +157,6 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div id="celebration" class="celebration" aria-hidden="true"></div>
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/app.js?v=play-1"></script>
   </body>
 </html>
