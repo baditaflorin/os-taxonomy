@@ -104,7 +104,9 @@ node scripts/validate.mjs
 
 This repository includes a dependency-free browser explorer that can track learning progress privately on one device. It supports multiple child profiles, `learning` and `known` states, evidence-based assessments, subject/age/search filters, and dimming or hiding concepts a child already knows.
 
-Two complementary views share the same local profile:
+Three complementary views share the same local profile:
+
+- **Play** opens a child-friendly island map for early learners. Large buttons, zoom controls, counting apples, recognizing shapes, comparing fish, and telling stories invite independent exploration. Choose English or Romanian and enable voice instructions or press Listen. Browser voice availability varies by device; storytelling is spoken aloud, without recording or speech recognition. Play records a new concept as learning, never as mastered or assessed, and preserves existing progress. Stars are session rewards and reset on reload or profile switch. Guest play works without a profile.
 
 - **Graph** visualizes all prerequisite relationships and opens the evidence checklist for any concept.
 - **Logbook** summarizes known, learning, assessed, and not-yet-started concepts; suggests next topics whose hard prerequisites are complete; shows subject journeys; and keeps a chronological activity trail.

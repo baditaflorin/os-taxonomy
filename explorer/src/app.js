@@ -1,6 +1,7 @@
 import { GraphView, SUBJECT_COLORS } from "./graph-view.js";
 import { filterLogbookTopics, getProgressStats, getRecommendedTopics, getSubjectJourneys } from "./logbook.js";
 import { ProfileStore } from "./profile-store.js";
+import { PlayView } from "./play-view.js";
 import { assessmentPromptFor, loadTaxonomy } from "./taxonomy.js";
 
 const elements = Object.fromEntries(
@@ -17,6 +18,7 @@ const elements = Object.fromEntries(
 const store = new ProfileStore();
 let taxonomy;
 let graph;
+let play;
 let selectedId = null;
 let dialogMode = "add";
 let toastTimer;
@@ -67,6 +69,7 @@ function renderProfiles() {
   renderDetails();
   renderLogbook();
   applyFilters();
+  play?.setProfile(store.activeProfile);
 }
 
 function renderSummary() {
@@ -169,14 +172,20 @@ function celebrate() {
 function switchView(view) {
   currentView = view;
   const logbook = view === "logbook";
+  const playing = view === "play";
+  elements.workspace.classList.toggle("play-mode", playing);
+  document.getElementById("play-view").hidden = !playing;
+  document.getElementById("play-mode").setAttribute("aria-pressed", String(playing));
+  document.getElementById("play-mode").classList.toggle("active", playing);
+  play?.stopSpeaking();
   elements.workspace.classList.toggle("logbook-mode", logbook);
   elements["logbook-view"].hidden = !logbook;
-  elements["graph-mode"].classList.toggle("active", !logbook);
-  elements["graph-mode"].setAttribute("aria-pressed", String(!logbook));
+  elements["graph-mode"].classList.toggle("active", view === "graph");
+  elements["graph-mode"].setAttribute("aria-pressed", String(view === "graph"));
   elements["logbook-mode"].classList.toggle("active", logbook);
   elements["logbook-mode"].setAttribute("aria-pressed", String(logbook));
   if (logbook) renderLogbook();
-  else requestAnimationFrame(() => graph?.resize());
+  else if (!playing) requestAnimationFrame(() => graph?.resize());
 }
 
 function openFromLogbook(topicId) {
@@ -579,6 +588,7 @@ function clearFilters() {
 }
 
 function bindEvents() {
+  document.getElementById("play-mode").addEventListener("click", () => switchView("play"));
   elements["graph-mode"].addEventListener("click", () => switchView("graph"));
   elements["logbook-mode"].addEventListener("click", () => switchView("logbook"));
   elements["profile-select"].addEventListener("change", (event) => store.setActive(event.target.value));
@@ -643,9 +653,16 @@ async function initialize() {
     for (const subject of taxonomy.subjects) elements["subject-filter"].append(new Option(subject, subject));
     for (let age = taxonomy.minAge; age <= taxonomy.maxAge; age += 1) elements["age-filter"].append(new Option(`Age ${age}`, String(age)));
     graph = new GraphView(elements.graph, taxonomy, selectTopic);
+    play = new PlayView(document.getElementById("play-view"), {
+      onPractice(topicId) {
+        const profile = store.activeProfile;
+        if (profile && !profile.progress[topicId]) store.setProgress(topicId, "learning");
+      },
+      onCelebrate: celebrate,
+    });
     store.subscribe(renderProfiles);
     renderProfiles();
-    if (!store.activeProfile) openProfileDialog("add");
+    switchView("play");
   } catch (error) {
     elements["progress-summary"].textContent = error.message;
     elements["details-empty"].querySelector("h1").textContent = "The explorer could not start";

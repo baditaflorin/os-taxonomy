@@ -4,6 +4,15 @@ All notable changes to the Marble Skill Taxonomy dataset are documented here.
 Dataset releases are versioned independently of the taxonomy `version` field
 (the underlying taxonomy is `v1`).
 
+## Unreleased — Explorer
+
+- Add a Play landing view for early learners, with large island targets, map zoom,
+  and counting, shape, comparison, and spoken storytelling activities.
+- Offer English and Romanian instructions with optional browser read-aloud.
+- Record completed play as learning practice without changing existing mastery.
+- Keep Graph and Logbook available and preserve existing browser profiles.
+- Add a Woodpecker validation pipeline; no GitHub Actions workflow is required.
+
 ## [1.0.0] — 2026-07-08
 
 Initial public release.

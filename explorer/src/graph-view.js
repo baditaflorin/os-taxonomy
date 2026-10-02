@@ -87,6 +87,7 @@ export class GraphView {
 
   resize() {
     const rect = this.#canvas.parentElement.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
     const ratio = Math.min(2, globalThis.devicePixelRatio || 1);
     this.#canvas.width = Math.round(rect.width * ratio);
     this.#canvas.height = Math.round(rect.height * ratio);
