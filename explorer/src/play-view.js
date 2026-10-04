@@ -1,4 +1,7 @@
 import { assessmentPromptFor } from "./taxonomy.js";
+import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js";
+
+const PRESCHOOL_MIN_AGE = 3;
 
 const COPY = {
   en: {
@@ -9,6 +12,14 @@ const COPY = {
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
     tryIt: "Try it your way: tell your grown-up, or type your answer here. Your answer stays on this device and is not saved.",
     answerPlaceholder: "Type your answer here (optional)…", iTried: "I had a go!",
+    childChallenge: "A little picture challenge", preschoolHint: "Pick a picture, then tell or show a grown-up what you noticed.",
+    tapPicture: "Tap a big picture", tellIt: "I can say it", pointToIt: "I can point", showWithToys: "I can show it with toys",
+    childFallback: "Ask a grown-up to read this little challenge. Then tell, point, or show what you know.",
+    foundIt: "You found it! Tell or show a grown-up how you knew.", goodTry: "Good try! Choose again or ask for a clue.",
+    childReady: "Great! Have a go, then let a grown-up check it.", grownupOriginal: "Grown-up: original assignment",
+    sourceEnglish: "The original taxonomy prompt is in English.", ageThree: "No Quick Assignments are tagged for age 3 in this taxonomy yet. The youngest source age is 4. Try an age-4 challenge together with a grown-up.",
+    ageThreeTitle: "For little explorers",
+    tryAgeFour: "Show age-4 challenges",
     grownup: "Grown-up check", grownupIntro: "Listen to or look at what your child tried. Check the things you saw them do.",
     markKnown: "I saw all of these — mark it known", keepLearning: "Keep practising for now", needProfile: "Create a child profile to save this path and unlock the next challenges.",
     needProfileButton: "Add child profile", lockedBy: "First try", unlocks: "This can open", noPath: "No challenges match these choices yet. Try another age or subject.",
@@ -25,6 +36,14 @@ const COPY = {
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
     tryIt: "Încearcă în felul tău: spune-i unui adult sau scrie răspunsul aici. Răspunsul rămâne pe acest dispozitiv și nu se salvează.",
     answerPlaceholder: "Scrie răspunsul aici (opțional)…", iTried: "Am încercat!",
+    childChallenge: "O provocare cu imagini", preschoolHint: "Alege o imagine, apoi spune-i sau arată-i unui adult ce ai observat.",
+    tapPicture: "Atinge o imagine", tellIt: "Îi spun adultului", pointToIt: "Arăt cu degetul", showWithToys: "Arăt cu jucării",
+    childFallback: "Roagă un adult să citească provocarea. Apoi spune, arată cu degetul sau folosește jucării.",
+    foundIt: "Ai găsit! Spune-i sau arată-i adultului cum ai aflat.", goodTry: "Bravo că ai încercat! Alege din nou sau cere un indiciu.",
+    childReady: "Minunat! Încearcă, apoi un adult poate verifica.", grownupOriginal: "Pentru adult: provocarea originală",
+    sourceEnglish: "Textul original din taxonomie este în engleză.", ageThree: "Taxonomia nu are încă provocări rapide etichetate pentru 3 ani. Cele mai mici provocări din sursă sunt de la 4 ani. Încearcă una împreună cu un adult.",
+    ageThreeTitle: "Pentru micii exploratori",
+    tryAgeFour: "Arată provocările pentru 4 ani",
     grownup: "Verificare pentru adult", grownupIntro: "Ascultă sau privește ce a încercat copilul. Bifează lucrurile pe care l-ai văzut făcându-le.",
     markKnown: "Le-a făcut pe toate — marchează că știe", keepLearning: "Mai exersăm deocamdată", needProfile: "Creează un profil ca să salvezi drumul și să deschizi provocările următoare.",
     needProfileButton: "Adaugă profilul copilului", lockedBy: "Încearcă mai întâi", unlocks: "Aceasta poate deschide", noPath: "Nu sunt provocări pentru aceste alegeri. Încearcă altă vârstă sau domeniu.",
@@ -100,6 +119,7 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
   ]));
   available.sort((left, right) =>
     (progress[left.id]?.status === "learning" ? 0 : 1) - (progress[right.id]?.status === "learning" ? 0 : 1) ||
+    (age <= 5 && preschoolActivityFor(left) ? 0 : 1) - (age <= 5 && preschoolActivityFor(right) ? 0 : 1) ||
     openedAt.get(right.id) - openedAt.get(left.id) ||
     (opensCount.get(right.id) ?? 0) - (opensCount.get(left.id) ?? 0) || order(left, right),
   );
@@ -127,11 +147,12 @@ export class PlayView {
       const savedLanguage = globalThis.localStorage.getItem("marble-taxonomy:play-language");
       if (savedLanguage === "ro" || savedLanguage === "en") this.lang = savedLanguage;
       const savedAge = Number(globalThis.localStorage.getItem("marble-taxonomy:play-age"));
-      if (Number.isInteger(savedAge) && savedAge >= taxonomy.minAge && savedAge <= taxonomy.maxAge) this.age = savedAge;
+      if (Number.isInteger(savedAge) && savedAge >= PRESCHOOL_MIN_AGE && savedAge <= taxonomy.maxAge) this.age = savedAge;
     } catch { /* Playing still works when browser storage is unavailable. */ }
     this.profile = null;
     this.progressKey = "";
     this.responses = new Map();
+    this.activityResponses = new Map();
     this.pendingEvidence = null;
     globalThis.addEventListener("resize", () => this.drawPathLinks());
     this.render();
@@ -147,6 +168,7 @@ export class PlayView {
     const changed = this.profile?.id !== profile?.id || this.profile?.name !== profile?.name || this.progressKey !== progressKey;
     if (this.profile?.id && this.profile.id !== profile?.id) {
       this.responses.clear();
+      this.activityResponses.clear();
       this.pendingEvidence = null;
       this.stars = 0;
       this.selectedTopicId = null;
@@ -195,7 +217,8 @@ export class PlayView {
     const voiceAvailable = Boolean(globalThis.speechSynthesis && globalThis.SpeechSynthesisUtterance);
     const voice = button(`🔊 ${this.voiceOn ? c.voiceOn : c.voiceOff}`, () => {
       this.voiceOn = !this.voiceOn;
-      if (this.voiceOn) this.speak(active ? this.promptFor(active) : c.pathIntro, active ? "en-US" : undefined);
+      const speech = active ? this.spokenChallengeFor(active) : { text: c.pathIntro };
+      if (this.voiceOn) this.speak(speech.text, speech.language);
       else this.stopSpeaking();
       voice.textContent = `🔊 ${this.voiceOn ? c.voiceOn : c.voiceOff}`;
       voice.setAttribute("aria-pressed", String(this.voiceOn));
@@ -217,13 +240,27 @@ export class PlayView {
 
   promptFor(topic) { return assessmentPromptFor(topic, this.profile?.name); }
 
+  spokenChallengeFor(topic) {
+    if (this.age <= 5) {
+      const activity = preschoolActivityFor(topic);
+      if (activity) {
+        return {
+          text: `${activity.prompt[this.lang]} ${activity.choices.map(({ label }) => label[this.lang]).join(", ")}`,
+          language: this.lang === "ro" ? "ro-RO" : "en-US",
+        };
+      }
+      return { text: this.promptFor(topic), language: "en-US" };
+    }
+    return { text: this.promptFor(topic), language: "en-US" };
+  }
+
   renderPath() {
     const c = this.copy;
     const filters = node("div", "play-path-filters");
     const ageLabel = node("label", "play-filter-label", c.age);
     const age = node("select", "play-filter");
     age.setAttribute("aria-label", c.age);
-    for (let value = this.taxonomy.minAge; value <= this.taxonomy.maxAge; value += 1) age.append(new Option(String(value), String(value)));
+    for (let value = Math.min(PRESCHOOL_MIN_AGE, this.taxonomy.minAge); value <= this.taxonomy.maxAge; value += 1) age.append(new Option(String(value), String(value)));
     age.value = String(this.age);
     age.addEventListener("change", () => {
       this.age = Number(age.value);
@@ -251,6 +288,18 @@ export class PlayView {
     board.setAttribute("aria-label", c.pathTitle);
     this.visiblePathNodes = new Map();
     const { available, locked, completed } = this.path;
+    if (this.age === 3 && !available.length && !locked.length && !completed.length) {
+      const empty = node("section", "age-three-empty");
+      empty.append(node("span", "age-three-icon", "🌱"), node("h3", "", c.ageThreeTitle), node("p", "", c.ageThree));
+      empty.append(button(c.tryAgeFour, () => {
+        this.age = 4;
+        try { globalThis.localStorage.setItem("marble-taxonomy:play-age", "4"); } catch { /* Optional preference. */ }
+        this.render();
+      }, "play-button age-three-next"));
+      board.append(empty);
+      this.stage.append(filters, heading, intro, controls, board);
+      return;
+    }
     if (!available.length && !locked.length && !completed.length) board.append(node("p", "play-path-empty", c.noPath));
     this.availableLimit = this.availableLimit ?? 8;
     this.lockedLimit = this.lockedLimit ?? 6;
@@ -341,10 +390,22 @@ export class PlayView {
     const item = node(state === "locked" ? "div" : "button", `path-node path-node-${state}`);
     if (item instanceof HTMLButtonElement) {
       item.type = "button";
-      item.addEventListener("click", () => { this.selectedTopicId = topic.id; this.screen = "challenge"; this.reviewing = false; this.scrollToTop(); this.render(); if (this.voiceOn) this.speak(this.promptFor(topic), "en-US"); });
+      item.addEventListener("click", () => {
+        this.selectedTopicId = topic.id;
+        this.screen = "challenge";
+        this.reviewing = false;
+        this.scrollToTop();
+        this.render();
+        if (this.voiceOn) {
+          const speech = this.spokenChallengeFor(topic);
+          this.speak(speech.text, speech.language);
+        }
+      });
     } else item.setAttribute("aria-disabled", "true");
     this.visiblePathNodes.set(topic.id, item);
-    const icon = state === "available" ? "✦" : state === "completed" ? "✓" : "🔒";
+    const icon = state === "available"
+      ? (this.age <= 5 ? preschoolIconFor(topic) : "✦")
+      : state === "completed" ? "✓" : "🔒";
     item.append(node("span", "path-node-icon", icon));
     const details = node("span", "path-node-details");
     details.append(node("strong", "", topic.name), node("small", "", `${topic.subject} · ages ${topic.ageRangeStart}–${topic.ageRangeEnd}`));
@@ -353,26 +414,129 @@ export class PlayView {
     return item;
   }
 
+  renderPreschoolActivity(topic, onResponse) {
+    const c = this.copy;
+    const activity = preschoolActivityFor(topic);
+    const card = node("section", "preschool-challenge");
+    card.setAttribute("aria-label", c.childChallenge);
+    const hero = node("div", "preschool-challenge-hero");
+    hero.append(node("span", "preschool-challenge-icon", preschoolIconFor(topic)));
+    const intro = node("div", "preschool-challenge-copy");
+    intro.append(node("p", "play-eyebrow", c.childChallenge), node("p", "preschool-hint", c.preschoolHint));
+    hero.append(intro);
+    card.append(hero);
+
+    if (activity) {
+      card.append(node("h4", "preschool-question", activity.prompt[this.lang]));
+      const choices = node("div", "preschool-choice-grid");
+      const feedback = node("p", "preschool-feedback");
+      feedback.setAttribute("role", "status");
+      feedback.setAttribute("aria-live", "polite");
+      const response = this.activityResponses.get(topic.id);
+      const choiceButtons = activity.choices.map((choice, index) => {
+        const option = node("button", "preschool-choice");
+        option.type = "button";
+        option.setAttribute("aria-pressed", String(response?.kind === "choice" && response.index === index));
+        option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", choice.label[this.lang]));
+        option.addEventListener("click", () => {
+          this.activityResponses.set(topic.id, { kind: "choice", index });
+          choiceButtons.forEach((candidate, candidateIndex) => {
+            const selected = candidateIndex === index;
+            candidate.setAttribute("aria-pressed", String(selected));
+            candidate.classList.toggle("preschool-choice-selected", selected);
+            candidate.classList.toggle("preschool-choice-correct", selected && Boolean(choice.correct));
+          });
+          feedback.textContent = choice.correct ? c.foundIt : c.goodTry;
+          feedback.classList.toggle("preschool-feedback-success", Boolean(choice.correct));
+          onResponse();
+          if (this.voiceOn) this.speak(choice.correct ? c.foundIt : c.goodTry);
+        });
+        const selected = response?.kind === "choice" && response.index === index;
+        option.classList.toggle("preschool-choice-selected", selected);
+        option.classList.toggle("preschool-choice-correct", selected && Boolean(choice.correct));
+        choices.append(option);
+        return option;
+      });
+      card.append(choices, feedback);
+      if (response?.kind === "choice") {
+        const chosen = activity.choices[response.index];
+        if (chosen) {
+          feedback.textContent = chosen.correct ? c.foundIt : c.goodTry;
+          feedback.classList.toggle("preschool-feedback-success", Boolean(chosen.correct));
+        }
+      }
+      return card;
+    }
+
+    card.append(node("h4", "preschool-question", topic.name), node("p", "preschool-hint", c.childFallback));
+    const ways = node("div", "preschool-choice-grid preschool-response-modes");
+    const feedback = node("p", "preschool-feedback");
+    feedback.setAttribute("role", "status");
+    feedback.setAttribute("aria-live", "polite");
+    const response = this.activityResponses.get(topic.id);
+    const modes = [
+      { id: "say", icon: "🗣️", label: c.tellIt },
+      { id: "point", icon: "👆", label: c.pointToIt },
+      { id: "show", icon: "🧸", label: c.showWithToys },
+    ];
+    for (const mode of modes) {
+      const option = node("button", "preschool-choice preschool-mode-choice");
+      option.type = "button";
+      option.setAttribute("aria-pressed", String(response?.kind === "mode" && response.mode === mode.id));
+      option.append(node("span", "preschool-choice-icon", mode.icon), node("span", "preschool-choice-label", mode.label));
+      option.addEventListener("click", () => {
+        this.activityResponses.set(topic.id, { kind: "mode", mode: mode.id });
+        for (const candidate of ways.querySelectorAll(".preschool-choice")) {
+          const selected = candidate === option;
+          candidate.setAttribute("aria-pressed", String(selected));
+          candidate.classList.toggle("preschool-choice-selected", selected);
+        }
+        feedback.textContent = c.childReady;
+        onResponse();
+      });
+      const selected = response?.kind === "mode" && response.mode === mode.id;
+      option.classList.toggle("preschool-choice-selected", selected);
+      ways.append(option);
+    }
+    if (response?.kind === "mode") feedback.textContent = c.childReady;
+    card.append(ways, feedback);
+    return card;
+  }
+
   renderChallenge(topic) {
     const c = this.copy;
     const prompt = this.promptFor(topic);
     const toolbar = node("div", "play-activity-bar");
-    toolbar.append(button(`← ${c.back}`, () => { this.screen = "path"; this.scrollToTop(); this.render(); }), button(`🔊 ${c.listen}`, () => this.speak(prompt, "en-US")));
+    const speech = this.spokenChallengeFor(topic);
+    toolbar.append(button(`← ${c.back}`, () => { this.screen = "path"; this.scrollToTop(); this.render(); }), button(`🔊 ${c.listen}`, () => this.speak(speech.text, speech.language)));
     const heading = node("h2", "play-instruction", c.challenge);
     const topicHeading = node("h3", "assignment-topic", topic.name);
     const metadata = node("p", "assignment-meta", `${topic.subject} · ages ${topic.ageRangeStart}–${topic.ageRangeEnd}`);
-    const promptCard = node("section", "assignment-prompt");
-    promptCard.append(node("p", "play-eyebrow", "QUICK ASSIGNMENT"), node("p", "assignment-question", prompt));
-    promptCard.append(node("p", "assignment-language-note", this.lang === "ro" ? "Textul provocării este din taxonomia originală, scrisă în engleză." : "This challenge comes from the original English taxonomy."));
+    let tryButton = null;
+    const preschoolMode = this.age <= 5;
+    const childActivity = preschoolMode
+      ? this.renderPreschoolActivity(topic, () => { if (tryButton) tryButton.disabled = false; })
+      : null;
+    const promptCard = node(preschoolMode ? "details" : "section", preschoolMode ? "grownup-original" : "assignment-prompt");
+    if (preschoolMode) {
+      promptCard.append(node("summary", "", `🧑‍🧑‍🧒 ${c.grownupOriginal}`));
+      promptCard.append(node("p", "assignment-question", prompt), node("p", "assignment-language-note", c.sourceEnglish));
+    } else {
+      promptCard.append(node("p", "play-eyebrow", "QUICK ASSIGNMENT"), node("p", "assignment-question", prompt));
+      promptCard.append(node("p", "assignment-language-note", this.lang === "ro" ? "Textul provocării este din taxonomia originală, scrisă în engleză." : "This challenge comes from the original English taxonomy."));
+    }
 
-    const responseLabel = node("label", "assignment-response-label", c.tryIt);
-    const response = node("textarea", "assignment-response");
-    response.rows = 4;
-    response.maxLength = 4000;
-    response.placeholder = c.answerPlaceholder;
-    response.value = this.responses.get(topic.id) ?? "";
-    response.addEventListener("input", () => this.responses.set(topic.id, response.value));
-    responseLabel.append(response);
+    let responseLabel = null;
+    if (!preschoolMode) {
+      responseLabel = node("label", "assignment-response-label", c.tryIt);
+      const response = node("textarea", "assignment-response");
+      response.rows = 4;
+      response.maxLength = 4000;
+      response.placeholder = c.answerPlaceholder;
+      response.value = this.responses.get(topic.id) ?? "";
+      response.addEventListener("input", () => this.responses.set(topic.id, response.value));
+      responseLabel.append(response);
+    }
 
     const nextTopics = (this.taxonomy.unlocks.get(topic.id) ?? [])
       .filter(({ strength, topic: next }) => strength === "hard" && next && (next.ageRangeStart <= this.age && next.ageRangeEnd >= this.age))
@@ -390,12 +554,17 @@ export class PlayView {
 
     this.checkArea = node("section", "grownup-check");
     if (!this.reviewing) {
-      const tryButton = button(`✨ ${c.iTried}`, () => {
+      tryButton = button(`✨ ${c.iTried}`, () => {
         this.reviewing = true;
         this.render();
         if (this.voiceOn) this.speak(c.grownupIntro);
       }, "play-button play-finish");
-      this.stage.append(toolbar, heading, topicHeading, metadata, promptCard, responseLabel, unlockPreview, tryButton);
+      tryButton.disabled = preschoolMode && !this.activityResponses.has(topic.id);
+      this.stage.append(toolbar, heading, topicHeading, metadata);
+      if (childActivity) this.stage.append(childActivity);
+      this.stage.append(promptCard);
+      if (responseLabel) this.stage.append(responseLabel);
+      this.stage.append(unlockPreview, tryButton);
     } else {
       this.checkArea.append(node("h3", "", c.grownup), node("p", "grownup-intro", c.grownupIntro));
       const checklist = node("div", "assignment-evidence");
@@ -418,6 +587,7 @@ export class PlayView {
         this.onAssess(topic.id, checks.map((_, index) => index));
         this.onCelebrate();
         this.responses.delete(topic.id);
+        this.activityResponses.delete(topic.id);
         this.pendingEvidence = null;
         this.screen = "path";
         this.reviewing = false;
@@ -434,6 +604,7 @@ export class PlayView {
       const learning = button(c.keepLearning, () => {
         if (this.profile) this.onPractice(topic.id);
         this.responses.delete(topic.id);
+        this.activityResponses.delete(topic.id);
         this.pendingEvidence = null;
         this.screen = "path";
         this.reviewing = false;
@@ -449,7 +620,11 @@ export class PlayView {
           this.onNeedProfile();
         }, "play-button path-more"));
       }
-      this.stage.append(toolbar, heading, topicHeading, metadata, promptCard, responseLabel, unlockPreview, this.checkArea);
+      this.stage.append(toolbar, heading, topicHeading, metadata);
+      if (childActivity) this.stage.append(childActivity);
+      this.stage.append(promptCard);
+      if (responseLabel) this.stage.append(responseLabel);
+      this.stage.append(unlockPreview, this.checkArea);
     }
   }
 }
