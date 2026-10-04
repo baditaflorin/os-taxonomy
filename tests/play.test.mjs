@@ -14,7 +14,6 @@ test('Play assignments come from the taxonomy quick assessments for the selected
   for (const topic of path.available) {
     assert.ok(topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5, topic.name);
     assert.ok(topic.assessmentPrompt, topic.name);
-    assert.ok(topic.evidence.length > 0, topic.name);
     assert.equal(taxonomy.prerequisites.get(topic.id).filter(({ strength }) => strength === 'hard').length, 0, topic.name);
   }
 });
@@ -24,7 +23,7 @@ test('finishing a hard prerequisite unlocks its next quick assignment', () => {
     if (strength !== 'hard') return false;
     const topic = taxonomy.byId.get(topicId);
     const prerequisite = taxonomy.byId.get(prerequisiteId);
-    return topic && prerequisite && topic.assessmentPrompt && topic.evidence?.length && topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5 &&
+    return topic && prerequisite && topic.assessmentPrompt && topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5 &&
       prerequisite.ageRangeStart <= 5 && prerequisite.ageRangeEnd >= 5 &&
       taxonomy.prerequisites.get(topicId).filter(({ strength: edgeStrength }) => edgeStrength === 'hard').length === 1;
   });
@@ -37,4 +36,16 @@ test('finishing a hard prerequisite unlocks its next quick assignment', () => {
     [dependency.prerequisiteId]: { status: 'mastered' },
   }, 5);
   assert.ok(nextPath.available.some(({ id }) => id === dependency.topicId));
+});
+
+test('topics without evidence lists still receive a playable path assignment', () => {
+  const topic = topics.find(({ evidence }) => !evidence?.length);
+  assert.ok(topic, 'expected at least one topic without evidence entries');
+
+  const path = getPlayPath(taxonomy, {}, topic.ageRangeStart);
+  const includedIds = new Set([
+    ...path.available.map(({ id }) => id),
+    ...path.locked.map(({ topic: lockedTopic }) => lockedTopic.id),
+  ]);
+  assert.ok(includedIds.has(topic.id), topic.name);
 });
