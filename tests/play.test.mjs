@@ -1,23 +1,40 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { PLAY_ISLANDS, makeRound } from '../explorer/src/play-view.js';
+import { getPlayPath } from '../explorer/src/play-view.js';
+import { buildTaxonomy } from '../explorer/src/taxonomy.js';
 
-test('every play activity maps to a real concept appropriate for age five', () => {
-  const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
-  for (const island of PLAY_ISLANDS) {
-    const topic = topics.find(({ id }) => id === island.topicId);
-    assert.ok(topic, island.topicId);
+const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
+const { dependencies } = JSON.parse(readFileSync(new URL('../data/dependencies.json', import.meta.url)));
+const taxonomy = buildTaxonomy(topics, dependencies);
+
+test('Play assignments come from the taxonomy quick assessments for the selected age', () => {
+  const path = getPlayPath(taxonomy, {}, 5);
+  assert.ok(path.available.length > 0);
+  for (const topic of path.available) {
     assert.ok(topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5, topic.name);
+    assert.ok(topic.assessmentPrompt, topic.name);
+    assert.ok(topic.evidence.length > 0, topic.name);
+    assert.equal(taxonomy.prerequisites.get(topic.id).filter(({ strength }) => strength === 'hard').length, 0, topic.name);
   }
 });
 
-test('rounds keep counts small and comparisons unambiguous', () => {
-  for (let round = 0; round < 20; round++) {
-    const counting = makeRound('count', round);
-    assert.ok(counting.count >= 2 && counting.count <= 5);
-    const comparison = makeRound('compare', round);
-    assert.notEqual(comparison.left, comparison.right);
-    assert.ok(Math.max(comparison.left, comparison.right) <= 5);
-  }
+test('finishing a hard prerequisite unlocks its next quick assignment', () => {
+  const dependency = dependencies.find(({ topicId, prerequisiteId, strength }) => {
+    if (strength !== 'hard') return false;
+    const topic = taxonomy.byId.get(topicId);
+    const prerequisite = taxonomy.byId.get(prerequisiteId);
+    return topic && prerequisite && topic.assessmentPrompt && topic.evidence?.length && topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5 &&
+      prerequisite.ageRangeStart <= 5 && prerequisite.ageRangeEnd >= 5 &&
+      taxonomy.prerequisites.get(topicId).filter(({ strength: edgeStrength }) => edgeStrength === 'hard').length === 1;
+  });
+  assert.ok(dependency, 'expected a single-prerequisite assignment in the age-five path');
+
+  const lockedPath = getPlayPath(taxonomy, {}, 5);
+  assert.ok(lockedPath.locked.some(({ topic }) => topic.id === dependency.topicId));
+
+  const nextPath = getPlayPath(taxonomy, {
+    [dependency.prerequisiteId]: { status: 'mastered' },
+  }, 5);
+  assert.ok(nextPath.available.some(({ id }) => id === dependency.topicId));
 });

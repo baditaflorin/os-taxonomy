@@ -6,10 +6,12 @@ Dataset releases are versioned independently of the taxonomy `version` field
 
 ## Unreleased — Explorer
 
-- Add a Play landing view for early learners, with large island targets, map zoom,
-  and counting, shape, comparison, and spoken storytelling activities.
-- Offer English and Romanian instructions with optional browser read-aloud.
-- Record completed play as learning practice without changing existing mastery.
+- Turn Play into a child-friendly path through the taxonomy's existing Quick
+  Assessments. Age- and subject-filtered challenges follow hard prerequisites.
+- Offer English and Romanian prompts with optional browser read-aloud and
+  transient responses that are not persisted.
+- Let a grown-up confirm the existing evidence criteria; known concepts unlock
+  their linked challenges in the learning path.
 - Keep Graph and Logbook available and preserve existing browser profiles.
 - Add a Woodpecker validation pipeline; no GitHub Actions workflow is required.
 

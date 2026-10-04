@@ -654,10 +654,16 @@ async function initialize() {
     for (let age = taxonomy.minAge; age <= taxonomy.maxAge; age += 1) elements["age-filter"].append(new Option(`Age ${age}`, String(age)));
     graph = new GraphView(elements.graph, taxonomy, selectTopic);
     play = new PlayView(document.getElementById("play-view"), {
+      taxonomy,
+      onAssess(topicId, evidence) {
+        store.setProgress(topicId, "mastered", { verified: true, evidence });
+        showToast(`Assignment complete — great work, ${store.activeProfile?.name}! New challenges are unlocked.`);
+      },
       onPractice(topicId) {
         const profile = store.activeProfile;
         if (profile && !profile.progress[topicId]) store.setProgress(topicId, "learning");
       },
+      onNeedProfile() { openProfileDialog("add"); },
       onCelebrate: celebrate,
     });
     store.subscribe(renderProfiles);
