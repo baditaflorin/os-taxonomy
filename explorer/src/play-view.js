@@ -1,4 +1,5 @@
 import { assessmentPromptFor } from "./taxonomy.js";
+import { childAssessmentFor } from "./child-assessments.js";
 import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js";
 
 const PRESCHOOL_MIN_AGE = 3;
@@ -17,6 +18,8 @@ const COPY = {
     childFallback: "Ask a grown-up to read this little challenge. Then tell, point, or show what you know.",
     foundIt: "You found it! Tell or show a grown-up how you knew.", goodTry: "Good try! Choose again or ask for a clue.",
     childReady: "Great! Have a go, then let a grown-up check it.", grownupOriginal: "Grown-up: original assignment",
+    mission: "Mission", missionCheck: "Check my answer!", missionPass: "Nice thinking! You got this part!", missionRetry: "Not quite. Look again and try another answer.",
+    assessmentHint: "Look at the pictures and tap the answer you think is right.", missionsComplete: "You finished every money mission!", finishMissions: "Save my stars & unlock the next challenge", chooseAtLeast: "Pick at least two pictures, then check.",
     sourceEnglish: "The original taxonomy prompt is in English.", ageThree: "No Quick Assignments are tagged for age 3 in this taxonomy yet. The youngest source age is 4. Try an age-4 challenge together with a grown-up.",
     ageThreeTitle: "For little explorers",
     tryAgeFour: "Show age-4 challenges",
@@ -41,6 +44,8 @@ const COPY = {
     childFallback: "Roagă un adult să citească provocarea. Apoi spune, arată cu degetul sau folosește jucării.",
     foundIt: "Ai găsit! Spune-i sau arată-i adultului cum ai aflat.", goodTry: "Bravo că ai încercat! Alege din nou sau cere un indiciu.",
     childReady: "Minunat! Încearcă, apoi un adult poate verifica.", grownupOriginal: "Pentru adult: provocarea originală",
+    mission: "Misiunea", missionCheck: "Verifică răspunsul!", missionPass: "Bravo! Ai rezolvat această parte!", missionRetry: "Nu chiar. Uită-te din nou și mai încearcă.",
+    assessmentHint: "Privește imaginile și atinge răspunsul care ți se pare potrivit.", missionsComplete: "Ai terminat toate misiunile despre bani!", finishMissions: "Salvează steluțele și deschide următoarea provocare", chooseAtLeast: "Alege cel puțin două imagini, apoi verifică.",
     sourceEnglish: "Textul original din taxonomie este în engleză.", ageThree: "Taxonomia nu are încă provocări rapide etichetate pentru 3 ani. Cele mai mici provocări din sursă sunt de la 4 ani. Încearcă una împreună cu un adult.",
     ageThreeTitle: "Pentru micii exploratori",
     tryAgeFour: "Arată provocările pentru 4 ani",
@@ -70,6 +75,19 @@ function button(label, action, className = "play-button") {
 
 function hardPrerequisites(taxonomy, topicId) {
   return taxonomy.prerequisites.get(topicId).filter(({ strength }) => strength === "hard");
+}
+
+function newAssessmentSession(assessment) {
+  const choiceOrders = {};
+  for (const task of assessment.tasks) {
+    const order = task.choices.map((_, index) => index);
+    for (let index = order.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
+    }
+    choiceOrders[task.evidenceIndex] = order;
+  }
+  return { completedEvidence: [], selectedChoices: [], feedback: null, choiceOrders };
 }
 
 function latestMasteredPrerequisiteAt(taxonomy, progress, topicId) {
@@ -119,7 +137,7 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
   ]));
   available.sort((left, right) =>
     (progress[left.id]?.status === "learning" ? 0 : 1) - (progress[right.id]?.status === "learning" ? 0 : 1) ||
-    (age <= 5 && preschoolActivityFor(left) ? 0 : 1) - (age <= 5 && preschoolActivityFor(right) ? 0 : 1) ||
+    (age <= 5 && (preschoolActivityFor(left) || childAssessmentFor(left)) ? 0 : 1) - (age <= 5 && (preschoolActivityFor(right) || childAssessmentFor(right)) ? 0 : 1) ||
     openedAt.get(right.id) - openedAt.get(left.id) ||
     (opensCount.get(right.id) ?? 0) - (opensCount.get(left.id) ?? 0) || order(left, right),
   );
@@ -153,6 +171,7 @@ export class PlayView {
     this.progressKey = "";
     this.responses = new Map();
     this.activityResponses = new Map();
+    this.assessmentSessions = new Map();
     this.pendingEvidence = null;
     globalThis.addEventListener("resize", () => this.drawPathLinks());
     this.render();
@@ -169,6 +188,7 @@ export class PlayView {
     if (this.profile?.id && this.profile.id !== profile?.id) {
       this.responses.clear();
       this.activityResponses.clear();
+      this.assessmentSessions.clear();
       this.pendingEvidence = null;
       this.stars = 0;
       this.selectedTopicId = null;
@@ -241,6 +261,18 @@ export class PlayView {
   promptFor(topic) { return assessmentPromptFor(topic, this.profile?.name); }
 
   spokenChallengeFor(topic) {
+    const assessment = childAssessmentFor(topic);
+    if (assessment) {
+      const session = this.assessmentSessions.get(topic.id);
+      const task = assessment.tasks.find(({ evidenceIndex }) => !session?.completedEvidence.includes(evidenceIndex));
+      if (task) {
+        return {
+          text: `${task.prompt[this.lang]} ${task.choices.map(({ label }) => label[this.lang]).join(", ")}`,
+          language: this.lang === "ro" ? "ro-RO" : "en-US",
+        };
+      }
+      return { text: this.copy.missionsComplete, language: this.lang === "ro" ? "ro-RO" : "en-US" };
+    }
     if (this.age <= 5) {
       const activity = preschoolActivityFor(topic);
       if (activity) {
@@ -404,7 +436,7 @@ export class PlayView {
     } else item.setAttribute("aria-disabled", "true");
     this.visiblePathNodes.set(topic.id, item);
     const icon = state === "available"
-      ? (this.age <= 5 ? preschoolIconFor(topic) : "✦")
+      ? (this.age <= 5 ? (childAssessmentFor(topic)?.icon ?? preschoolIconFor(topic)) : "✦")
       : state === "completed" ? "✓" : "🔒";
     item.append(node("span", "path-node-icon", icon));
     const details = node("span", "path-node-details");
@@ -503,6 +535,123 @@ export class PlayView {
     return card;
   }
 
+  finishChildAssessment(topic, assessment) {
+    const evidence = assessment.tasks.map(({ evidenceIndex }) => evidenceIndex);
+    if (!this.profile) {
+      this.pendingEvidence = { topicId: topic.id, evidence };
+      this.onNeedProfile();
+      return;
+    }
+
+    this.responses.delete(topic.id);
+    this.activityResponses.delete(topic.id);
+    this.assessmentSessions.delete(topic.id);
+    this.pendingEvidence = null;
+    this.screen = "path";
+    this.reviewing = false;
+    this.selectedTopicId = null;
+    this.stars += 1;
+    this.onAssess(topic.id, evidence);
+    this.onCelebrate();
+    this.scrollToTop();
+    this.render();
+    if (this.voiceOn) this.speak(this.copy.success);
+  }
+
+  renderChildAssessment(topic, assessment) {
+    const c = this.copy;
+    let session = this.assessmentSessions.get(topic.id);
+    if (!session) {
+      session = newAssessmentSession(assessment);
+      this.assessmentSessions.set(topic.id, session);
+    }
+
+    const card = node("section", "child-assessment preschool-challenge");
+    card.setAttribute("aria-label", c.childChallenge);
+    const header = node("div", "preschool-challenge-hero");
+    header.append(node("span", "preschool-challenge-icon", assessment.icon ?? "⭐"));
+    const intro = node("div", "preschool-challenge-copy");
+    intro.append(node("p", "play-eyebrow", c.childChallenge), node("p", "preschool-hint", c.assessmentHint));
+    header.append(intro);
+    card.append(header);
+
+    const completed = session.completedEvidence.length;
+    const task = assessment.tasks.find(({ evidenceIndex }) => !session.completedEvidence.includes(evidenceIndex));
+    if (!task) {
+      card.append(node("p", "child-assessment-progress", `⭐ ${assessment.tasks.length} / ${assessment.tasks.length}`));
+      card.append(node("h4", "preschool-question", c.missionsComplete));
+      const stars = node("div", "child-assessment-stars");
+      for (const _task of assessment.tasks) stars.append(node("span", "", "⭐"));
+      card.append(stars);
+      card.append(button(c.finishMissions, () => this.finishChildAssessment(topic, assessment), "play-button play-finish"));
+      return card;
+    }
+
+    const taskNumber = completed + 1;
+    card.append(node("p", "child-assessment-progress", `${c.mission} ${taskNumber} / ${assessment.tasks.length} · ⭐ ${completed} / ${assessment.tasks.length}`));
+    card.append(node("h4", "preschool-question", task.prompt[this.lang]));
+    if (task.select === "multiple") card.append(node("p", "preschool-hint child-assessment-instruction", c.chooseAtLeast));
+
+    const choices = node("div", "preschool-choice-grid child-assessment-choices");
+    const displayChoices = session.choiceOrders[task.evidenceIndex].map((index) => task.choices[index]);
+    const feedback = node("p", "preschool-feedback child-assessment-feedback");
+    feedback.setAttribute("role", "status");
+    feedback.setAttribute("aria-live", "polite");
+    if (session.feedback) {
+      feedback.textContent = session.feedback.text;
+      feedback.classList.toggle("preschool-feedback-success", session.feedback.success);
+    }
+
+    const choiceButtons = displayChoices.map((choice, index) => {
+      const option = node("button", "preschool-choice");
+      option.type = "button";
+      option.setAttribute("aria-pressed", String(session.selectedChoices.includes(index)));
+      option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", choice.label[this.lang]));
+      option.classList.toggle("preschool-choice-selected", session.selectedChoices.includes(index));
+      option.addEventListener("click", () => {
+        const selected = new Set(session.selectedChoices);
+        if (task.select === "single") {
+          selected.clear();
+          selected.add(index);
+        } else if (selected.has(index)) selected.delete(index);
+        else selected.add(index);
+        session.selectedChoices = [...selected];
+        session.feedback = null;
+        for (const [candidateIndex, candidate] of choiceButtons.entries()) {
+          const pressed = selected.has(candidateIndex);
+          candidate.setAttribute("aria-pressed", String(pressed));
+          candidate.classList.toggle("preschool-choice-selected", pressed);
+        }
+        feedback.textContent = "";
+        feedback.classList.remove("preschool-feedback-success");
+        checkAnswer.disabled = selected.size < (task.requiredCount ?? 1);
+      });
+      choices.append(option);
+      return option;
+    });
+
+    const checkAnswer = button(c.missionCheck, () => {
+      const enoughChoices = session.selectedChoices.length >= (task.requiredCount ?? 1);
+      const allCorrect = enoughChoices && session.selectedChoices.every((index) => displayChoices[index]?.correct === true);
+      if (!allCorrect) {
+        session.feedback = { success: false, text: c.missionRetry };
+        feedback.textContent = c.missionRetry;
+        feedback.classList.remove("preschool-feedback-success");
+        if (this.voiceOn) this.speak(c.missionRetry);
+        return;
+      }
+
+      session.completedEvidence.push(task.evidenceIndex);
+      session.selectedChoices = [];
+      session.feedback = { success: true, text: c.missionPass };
+      if (this.voiceOn) this.speak(c.missionPass);
+      this.render();
+    }, "play-button play-finish child-assessment-check");
+    checkAnswer.disabled = session.selectedChoices.length < (task.requiredCount ?? 1);
+    card.append(choices, feedback, checkAnswer);
+    return card;
+  }
+
   renderChallenge(topic) {
     const c = this.copy;
     const prompt = this.promptFor(topic);
@@ -514,11 +663,13 @@ export class PlayView {
     const metadata = node("p", "assignment-meta", `${topic.subject} · ages ${topic.ageRangeStart}–${topic.ageRangeEnd}`);
     let tryButton = null;
     const preschoolMode = this.age <= 5;
-    const childActivity = preschoolMode
-      ? this.renderPreschoolActivity(topic, () => { if (tryButton) tryButton.disabled = false; })
-      : null;
-    const promptCard = node(preschoolMode ? "details" : "section", preschoolMode ? "grownup-original" : "assignment-prompt");
-    if (preschoolMode) {
+    const childAssessment = childAssessmentFor(topic);
+    const childActivity = childAssessment
+      ? this.renderChildAssessment(topic, childAssessment)
+      : preschoolMode ? this.renderPreschoolActivity(topic, () => { if (tryButton) tryButton.disabled = false; }) : null;
+    const grownupPrompt = preschoolMode || childAssessment;
+    const promptCard = node(grownupPrompt ? "details" : "section", grownupPrompt ? "grownup-original" : "assignment-prompt");
+    if (grownupPrompt) {
       promptCard.append(node("summary", "", `🧑‍🧑‍🧒 ${c.grownupOriginal}`));
       promptCard.append(node("p", "assignment-question", prompt), node("p", "assignment-language-note", c.sourceEnglish));
     } else {
@@ -527,7 +678,7 @@ export class PlayView {
     }
 
     let responseLabel = null;
-    if (!preschoolMode) {
+    if (!preschoolMode && !childAssessment) {
       responseLabel = node("label", "assignment-response-label", c.tryIt);
       const response = node("textarea", "assignment-response");
       response.rows = 4;
@@ -553,6 +704,11 @@ export class PlayView {
     }
 
     this.checkArea = node("section", "grownup-check");
+    if (childAssessment) {
+      this.stage.append(toolbar, heading, topicHeading, metadata, childActivity, promptCard, unlockPreview);
+      return;
+    }
+
     if (!this.reviewing) {
       tryButton = button(`✨ ${c.iTried}`, () => {
         this.reviewing = true;
@@ -588,6 +744,7 @@ export class PlayView {
         this.onCelebrate();
         this.responses.delete(topic.id);
         this.activityResponses.delete(topic.id);
+        this.assessmentSessions.delete(topic.id);
         this.pendingEvidence = null;
         this.screen = "path";
         this.reviewing = false;
@@ -605,6 +762,7 @@ export class PlayView {
         if (this.profile) this.onPractice(topic.id);
         this.responses.delete(topic.id);
         this.activityResponses.delete(topic.id);
+        this.assessmentSessions.delete(topic.id);
         this.pendingEvidence = null;
         this.screen = "path";
         this.reviewing = false;

@@ -1,7 +1,7 @@
 import { GraphView, SUBJECT_COLORS } from "./graph-view.js";
 import { filterLogbookTopics, getProgressStats, getRecommendedTopics, getSubjectJourneys } from "./logbook.js";
 import { ProfileStore } from "./profile-store.js";
-import { PlayView } from "./play-view.js?v=assignment-path-3";
+import { PlayView } from "./play-view.js?v=assignment-path-4";
 import { assessmentPromptFor, loadTaxonomy } from "./taxonomy.js";
 
 const elements = Object.fromEntries(
