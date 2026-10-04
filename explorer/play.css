@@ -20,19 +20,24 @@
 .play-map-controls, .play-activity-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
 .play-activity-bar { justify-content: space-between; }
 .play-stage { max-width: 1000px; margin: 0 auto; background: #ffffffa8; border: 2px solid white; border-radius: 30px; padding: 18px; }
-.learning-path-board { display: grid; gap: 17px; }
+.learning-path-board { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; column-gap: 48px; row-gap: 18px; padding: 8px 5px; }
+.path-connections { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.path-edge { fill: none; stroke: #548b60; stroke-width: 4; stroke-dasharray: 7 6; opacity: .92; }
+.path-edge-locked { stroke: #bc932b; }
+.path-lane { position: relative; z-index: 1; display: grid; align-content: start; gap: 12px; min-width: 0; }
+.path-lane-empty { display: grid; place-items: center; min-height: 90px; margin: 0; padding: 12px; border: 2px dashed #ccd8c8; border-radius: 18px; color: #687568; background: #f8fbf6; text-align: center; font-size: 13px; line-height: 1.4; }
 .path-section-title { margin: 6px 0 0; font-size: 19px; }
 .path-locked-title { color: #68736a; }
 .path-completed-title { color: #2c7951; }
 .path-nodes { display: grid; gap: 11px; }
-.path-node { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; min-height: 82px; padding: 12px 16px; border: 2px solid #c8d8c1; border-bottom-width: 6px; border-radius: 22px; color: #20382d; background: white; text-align: left; }
+.path-node { position: relative; display: grid; grid-template-columns: 58px minmax(0, 1fr); align-items: center; gap: 8px 14px; width: 100%; min-height: 104px; padding: 12px 16px; border: 2px solid #c8d8c1; border-bottom-width: 6px; border-radius: 22px; color: #20382d; background: white; text-align: left; }
 button.path-node { cursor: pointer; }
 button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .path-node-icon { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 17px; color: #386b30; background: #d8f0aa; font-size: 27px; font-weight: 900; }
 .path-node-details { display: grid; gap: 4px; min-width: 0; }
 .path-node-details strong { font-size: 18px; }
 .path-node-details small { color: #687568; font-size: 12px; }
-.path-node-state { padding: 8px 11px; border-radius: 13px; color: #35622b; background: #e9f4cc; font-size: 13px; font-weight: 800; text-align: center; }
+.path-node-state { grid-column: 2; justify-self: start; max-width: 100%; padding: 6px 10px; border-radius: 13px; color: #35622b; background: #e9f4cc; font-size: 12px; font-weight: 800; text-align: center; }
 .path-node-locked { border-color: #d7dbd4; background: #edf0ec; color: #637064; }
 .path-node-locked .path-node-icon, .path-node-locked .path-node-state { color: #68736a; background: #dce2db; }
 .path-prerequisite { color: #657064 !important; }
@@ -66,9 +71,10 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
   .play-header { align-items: start; flex-direction: column; gap: 12px; }
   .play-stage { padding: 12px; }
   .play-path-filters { justify-content: stretch; }
+  .learning-path-board { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .play-filter-label { flex: 1 1 180px; justify-content: space-between; }
   .play-filter { min-width: 100px; max-width: 58%; }
-  .path-node { grid-template-columns: 46px minmax(0, 1fr); gap: 10px; padding: 10px; }
+  .path-node { grid-template-columns: 46px minmax(0, 1fr); gap: 8px 10px; min-height: 96px; padding: 10px; }
   .path-node-icon { width: 42px; height: 42px; }
   .path-node-details strong { font-size: 16px; }
   .path-node-state { grid-column: 2; justify-self: start; padding: 6px 9px; }

@@ -5,7 +5,7 @@ const COPY = {
     hello: "Ready to explore", voiceOff: "Voice off", voiceOn: "Voice on", listen: "Listen",
     age: "I'm learning at age", subject: "Choose a subject", allSubjects: "All subjects",
     pathTitle: "Your learning path", pathIntro: "Pick a glowing challenge. Finish one to open more of the path!",
-    ready: "Ready to play", locked: "Coming up on your path", done: "Already explored", more: "Show more challenges",
+    ready: "Ready to play", locked: "Coming up", done: "Known", more: "Show more challenges",
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
     tryIt: "Try it your way: tell your grown-up, or type your answer here. Your answer stays on this device and is not saved.",
     answerPlaceholder: "Type your answer here (optional)…", iTried: "I had a go!",
@@ -21,7 +21,7 @@ const COPY = {
     hello: "Gata de explorat", voiceOff: "Fără voce", voiceOn: "Cu voce", listen: "Ascultă",
     age: "Învăț la vârsta de", subject: "Alege un domeniu", allSubjects: "Toate domeniile",
     pathTitle: "Drumul tău de învățare", pathIntro: "Alege o provocare luminoasă. Termină una ca să deschizi altele!",
-    ready: "Gata de joacă", locked: "Urmează pe drum", done: "Deja explorate", more: "Arată mai multe provocări",
+    ready: "Gata de joacă", locked: "Urmează", done: "Știe deja", more: "Arată mai multe provocări",
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
     tryIt: "Încearcă în felul tău: spune-i unui adult sau scrie răspunsul aici. Răspunsul rămâne pe acest dispozitiv și nu se salvează.",
     answerPlaceholder: "Scrie răspunsul aici (opțional)…", iTried: "Am încercat!",
@@ -53,6 +53,14 @@ function hardPrerequisites(taxonomy, topicId) {
   return taxonomy.prerequisites.get(topicId).filter(({ strength }) => strength === "hard");
 }
 
+function latestMasteredPrerequisiteAt(taxonomy, progress, topicId) {
+  return hardPrerequisites(taxonomy, topicId).reduce((latest, { prerequisiteId }) => {
+    const entry = progress[prerequisiteId];
+    const updatedAt = entry?.status === "mastered" ? Date.parse(entry.updatedAt) : 0;
+    return Number.isFinite(updatedAt) ? Math.max(latest, updatedAt) : latest;
+  }, 0);
+}
+
 export function getPlayPath(taxonomy, progress, age, subject = "") {
   const inScope = taxonomy.topics.filter((topic) =>
     topic.assessmentPrompt && topic.evidence?.length && topic.ageRangeStart <= age && topic.ageRangeEnd >= age && (!subject || topic.subject === subject),
@@ -76,9 +84,26 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
     return leftLearning - rightLearning || left.ageRangeStart - right.ageRangeStart ||
       (right.centrality || 0) - (left.centrality || 0) || left.name.localeCompare(right.name);
   };
-  available.sort(order);
-  completed.sort(order);
-  locked.sort((left, right) => left.unmet.length - right.unmet.length || order(left.topic, right.topic));
+  const readyIds = new Set(available.map(({ id }) => id));
+  locked.sort((left, right) =>
+    right.unmet.filter(({ prerequisiteId }) => readyIds.has(prerequisiteId)).length -
+      left.unmet.filter(({ prerequisiteId }) => readyIds.has(prerequisiteId)).length ||
+    left.unmet.length - right.unmet.length || order(left.topic, right.topic),
+  );
+  const opensCount = new Map();
+  for (const item of locked) for (const edge of item.unmet) {
+    if (readyIds.has(edge.prerequisiteId)) opensCount.set(edge.prerequisiteId, (opensCount.get(edge.prerequisiteId) ?? 0) + 1);
+  }
+  const openedAt = new Map(available.map((topic) => [
+    topic.id,
+    latestMasteredPrerequisiteAt(taxonomy, progress, topic.id),
+  ]));
+  available.sort((left, right) =>
+    (progress[left.id]?.status === "learning" ? 0 : 1) - (progress[right.id]?.status === "learning" ? 0 : 1) ||
+    openedAt.get(right.id) - openedAt.get(left.id) ||
+    (opensCount.get(right.id) ?? 0) - (opensCount.get(left.id) ?? 0) || order(left, right),
+  );
+  completed.sort((left, right) => (progress[right.id]?.updatedAt ?? "").localeCompare(progress[left.id]?.updatedAt ?? "") || order(left, right));
   return { available, locked, completed };
 }
 
@@ -108,6 +133,7 @@ export class PlayView {
     this.progressKey = "";
     this.responses = new Map();
     this.pendingEvidence = null;
+    globalThis.addEventListener("resize", () => this.drawPathLinks());
     this.render();
     document.addEventListener("visibilitychange", () => { if (document.hidden) this.stopSpeaking(); });
   }
@@ -122,6 +148,7 @@ export class PlayView {
     if (this.profile?.id && this.profile.id !== profile?.id) {
       this.responses.clear();
       this.pendingEvidence = null;
+      this.stars = 0;
       this.selectedTopicId = null;
       this.screen = "path";
       this.reviewing = false;
@@ -132,6 +159,10 @@ export class PlayView {
   }
 
   stopSpeaking() { globalThis.speechSynthesis?.cancel(); }
+  scrollToTop() {
+    const workspace = this.root.closest(".workspace");
+    if (workspace) workspace.scrollTop = 0;
+  }
   speak(text, language = this.lang === "ro" ? "ro-RO" : "en-US") {
     if (!globalThis.speechSynthesis || !globalThis.SpeechSynthesisUtterance) return;
     this.stopSpeaking();
@@ -216,33 +247,93 @@ export class PlayView {
     const controls = node("div", "play-map-controls");
     controls.append(button(`🔊 ${c.listen}`, () => this.speak(c.pathIntro)));
     const board = node("div", "learning-path-board");
+    board.setAttribute("role", "group");
+    board.setAttribute("aria-label", c.pathTitle);
+    this.visiblePathNodes = new Map();
     const { available, locked, completed } = this.path;
     if (!available.length && !locked.length && !completed.length) board.append(node("p", "play-path-empty", c.noPath));
     this.availableLimit = this.availableLimit ?? 8;
     this.lockedLimit = this.lockedLimit ?? 6;
     this.completedLimit = this.completedLimit ?? 6;
-    if (available.length) {
-      board.append(node("h3", "path-section-title", `${c.ready} · ${Math.min(this.availableLimit, available.length)} / ${available.length}`));
-      const nodes = node("div", "path-nodes path-available");
-      for (const topic of available.slice(0, this.availableLimit)) nodes.append(this.assignmentNode(topic, "available"));
-      board.append(nodes);
-      if (available.length > this.availableLimit) board.append(button(c.more, () => { this.availableLimit += 8; this.render(); }, "play-button path-more"));
-    }
-    if (locked.length) {
-      board.append(node("h3", "path-section-title path-locked-title", `${c.locked} · ${Math.min(this.lockedLimit, locked.length)} / ${locked.length}`));
-      const nodes = node("div", "path-nodes path-locked");
-      for (const { topic, unmet } of locked.slice(0, this.lockedLimit)) nodes.append(this.assignmentNode(topic, "locked", unmet));
-      board.append(nodes);
-      if (locked.length > this.lockedLimit) board.append(button(c.more, () => { this.lockedLimit += 6; this.render(); }, "play-button path-more"));
-    }
-    if (completed.length) {
-      board.append(node("h3", "path-section-title path-completed-title", `${c.done} · ${Math.min(this.completedLimit, completed.length)} / ${completed.length}`));
-      const nodes = node("div", "path-nodes path-completed");
-      for (const topic of completed.slice(0, this.completedLimit)) nodes.append(this.assignmentNode(topic, "completed"));
-      board.append(nodes);
-      if (completed.length > this.completedLimit) board.append(button(c.more, () => { this.completedLimit += 6; this.render(); }, "play-button path-more"));
+    this.pathBoard = board;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("path-connections");
+    svg.setAttribute("aria-hidden", "true");
+    board.append(svg);
+    const lanes = [
+      { state: "completed", topics: completed, limit: this.completedLimit, copy: c.done },
+      { state: "available", topics: available, limit: this.availableLimit, copy: c.ready },
+      { state: "locked", topics: locked, limit: this.lockedLimit, copy: c.locked },
+    ];
+    for (const laneData of lanes) {
+      const lane = node("section", `path-lane path-lane-${laneData.state}`);
+      lane.append(node("h3", "path-section-title", `${laneData.copy} · ${Math.min(laneData.limit, laneData.topics.length)} / ${laneData.topics.length}`));
+      const list = node("div", `path-nodes path-${laneData.state}`);
+      const visible = laneData.topics.slice(0, laneData.limit);
+      for (const item of visible) {
+        const topic = laneData.state === "locked" ? item.topic : item;
+        const unmet = laneData.state === "locked" ? item.unmet : [];
+        list.append(this.assignmentNode(topic, laneData.state, unmet));
+      }
+      if (!visible.length) list.append(node("p", "path-lane-empty", laneData.state === "completed" ? c.waiting : c.noPath));
+      lane.append(list);
+      if (laneData.topics.length > laneData.limit) lane.append(button(c.more, () => {
+        this[`${laneData.state}Limit`] += laneData.state === "available" ? 8 : 6;
+        this.render();
+      }, "play-button path-more"));
+      board.append(lane);
     }
     this.stage.append(filters, heading, intro, controls, board);
+    requestAnimationFrame(() => this.drawPathLinks());
+  }
+
+  drawPathLinks() {
+    if (!this.pathBoard?.isConnected || !this.visiblePathNodes?.size) return;
+    const svg = this.pathBoard.querySelector(".path-connections");
+    const bounds = this.pathBoard.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    svg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+    svg.replaceChildren();
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    for (const [id, color] of [["path-arrow", "#548b60"], ["path-arrow-locked", "#bc932b"]]) {
+      const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+      marker.setAttribute("id", id);
+      marker.setAttribute("viewBox", "0 0 10 10");
+      marker.setAttribute("refX", "9");
+      marker.setAttribute("refY", "5");
+      marker.setAttribute("markerWidth", "10");
+      marker.setAttribute("markerHeight", "10");
+      marker.setAttribute("orient", "auto-start-reverse");
+      const arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+      arrow.setAttribute("fill", color);
+      marker.append(arrow);
+      defs.append(marker);
+    }
+    svg.append(defs);
+    for (const dependency of this.taxonomy.dependencies) {
+      if (dependency.strength !== "hard") continue;
+      const from = this.visiblePathNodes.get(dependency.prerequisiteId);
+      const to = this.visiblePathNodes.get(dependency.topicId);
+      if (!from || !to) continue;
+      const fromBox = from.getBoundingClientRect();
+      const toBox = to.getBoundingClientRect();
+      const horizontal = !matchMedia("(max-width: 760px)").matches;
+      const start = horizontal
+        ? { x: fromBox.right - bounds.left, y: fromBox.top + fromBox.height / 2 - bounds.top }
+        : { x: fromBox.left + fromBox.width / 2 - bounds.left, y: fromBox.bottom - bounds.top };
+      const end = horizontal
+        ? { x: toBox.left - bounds.left, y: toBox.top + toBox.height / 2 - bounds.top }
+        : { x: toBox.left + toBox.width / 2 - bounds.left, y: toBox.top - bounds.top };
+      const bend = Math.abs(horizontal ? end.x - start.x : end.y - start.y) * 0.42;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", horizontal
+        ? `M ${start.x} ${start.y} C ${start.x + bend} ${start.y}, ${end.x - bend} ${end.y}, ${end.x} ${end.y}`
+        : `M ${start.x} ${start.y} C ${start.x} ${start.y + bend}, ${end.x} ${end.y - bend}, ${end.x} ${end.y}`);
+      path.setAttribute("class", `path-edge${to.classList.contains("path-node-locked") ? " path-edge-locked" : ""}`);
+      path.setAttribute("marker-end", `url(#${to.classList.contains("path-node-locked") ? "path-arrow-locked" : "path-arrow"})`);
+      svg.append(path);
+    }
   }
 
   assignmentNode(topic, state, unmet = []) {
@@ -250,8 +341,9 @@ export class PlayView {
     const item = node(state === "locked" ? "div" : "button", `path-node path-node-${state}`);
     if (item instanceof HTMLButtonElement) {
       item.type = "button";
-      item.addEventListener("click", () => { this.selectedTopicId = topic.id; this.screen = "challenge"; this.reviewing = false; this.render(); if (this.voiceOn) this.speak(this.promptFor(topic), "en-US"); });
+      item.addEventListener("click", () => { this.selectedTopicId = topic.id; this.screen = "challenge"; this.reviewing = false; this.scrollToTop(); this.render(); if (this.voiceOn) this.speak(this.promptFor(topic), "en-US"); });
     } else item.setAttribute("aria-disabled", "true");
+    this.visiblePathNodes.set(topic.id, item);
     const icon = state === "available" ? "✦" : state === "completed" ? "✓" : "🔒";
     item.append(node("span", "path-node-icon", icon));
     const details = node("span", "path-node-details");
@@ -265,7 +357,7 @@ export class PlayView {
     const c = this.copy;
     const prompt = this.promptFor(topic);
     const toolbar = node("div", "play-activity-bar");
-    toolbar.append(button(`← ${c.back}`, () => { this.screen = "path"; this.render(); }), button(`🔊 ${c.listen}`, () => this.speak(prompt, "en-US")));
+    toolbar.append(button(`← ${c.back}`, () => { this.screen = "path"; this.scrollToTop(); this.render(); }), button(`🔊 ${c.listen}`, () => this.speak(prompt, "en-US")));
     const heading = node("h2", "play-instruction", c.challenge);
     const topicHeading = node("h3", "assignment-topic", topic.name);
     const metadata = node("p", "assignment-meta", `${topic.subject} · ages ${topic.ageRangeStart}–${topic.ageRangeEnd}`);
@@ -285,6 +377,8 @@ export class PlayView {
     const nextTopics = (this.taxonomy.unlocks.get(topic.id) ?? [])
       .filter(({ strength, topic: next }) => strength === "hard" && next && (next.ageRangeStart <= this.age && next.ageRangeEnd >= this.age))
       .map(({ topic: next }) => next)
+      .filter((next) => hardPrerequisites(this.taxonomy, next.id)
+        .every(({ prerequisiteId }) => prerequisiteId === topic.id || this.profile?.progress?.[prerequisiteId]?.status === "mastered"))
       .slice(0, 3);
     const unlockPreview = node("section", "assignment-unlocks");
     unlockPreview.append(node("strong", "", nextTopics.length ? c.unlocks : c.waiting));
@@ -328,6 +422,7 @@ export class PlayView {
         this.screen = "path";
         this.reviewing = false;
         this.selectedTopicId = null;
+        this.scrollToTop();
         this.render();
         if (this.voiceOn) this.speak(c.success);
       }, "play-button play-finish");
@@ -343,6 +438,7 @@ export class PlayView {
         this.screen = "path";
         this.reviewing = false;
         this.selectedTopicId = null;
+        this.scrollToTop();
         this.render();
       }, "play-button play-learning");
       this.checkArea.append(checklist, complete, learning);
