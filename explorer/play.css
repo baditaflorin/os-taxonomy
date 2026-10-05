@@ -25,7 +25,9 @@
 .play-stage { max-width: 1000px; margin: 0 auto; background: #ffffffa8; border: 2px solid white; border-radius: 30px; padding: 18px; }
 .learning-path-board { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; column-gap: 48px; row-gap: 18px; padding: 8px 5px; }
 .learning-path-board.kid-path-board { grid-template-columns: minmax(0, 1fr); max-width: 980px; margin: 0 auto; }
-.kid-path-board .path-nodes { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+.kid-path-board .path-connections { display: none; }
+.kid-path-board .path-nodes { position: relative; grid-template-columns: minmax(0, 1fr); max-width: 820px; margin: 0 auto; }
+.kid-path-board .path-nodes::before { content: ""; position: absolute; z-index: 0; top: 28px; bottom: 28px; left: 39px; border-left: 5px dashed #c7dfa5; pointer-events: none; }
 .path-connections { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .path-edge { fill: none; stroke: #548b60; stroke-width: 4; stroke-dasharray: 7 6; opacity: .92; }
 .path-edge-locked { stroke: #bc932b; }
@@ -50,7 +52,30 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .path-node-completed .path-node-icon, .path-node-completed .path-node-state { color: #1d7044; background: #d0f0dd; }
 .path-node-practiced { border-color: #b8e5f7; background: #f1fbff; }
 .path-node-practiced .path-node-icon, .path-node-practiced .path-node-state { color: #255c74; background: #d8f1fb; }
+.path-node-current { border-color: #d9ad35; box-shadow: 0 0 0 5px #ffeaa5; }
+.path-node-current .path-node-icon { color: #604600; background: #ffe28a; }
 .path-more { justify-self: center; min-height: 44px; font-size: 14px; }
+.kid-continue-card { max-width: 820px; margin: 0 auto 18px; padding: 14px; border: 2px solid #fff; border-radius: 24px; background: linear-gradient(120deg, #f4ffdf, #fff8da); box-shadow: 0 5px 0 #d6e4c1; }
+.kid-continue-card > .play-eyebrow { margin: 0 0 10px 4px; }
+.kid-continue-node { max-width: 100%; }
+.kid-worlds { max-width: 850px; margin: 20px auto 0; }
+.kid-world-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 12px; }
+.kid-world-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 6px 12px; min-width: 0; min-height: 116px; padding: 14px; border: 2px solid #d3dfd0; border-bottom-width: 6px; border-radius: 22px; color: #20382d; background: #fff; text-align: left; cursor: pointer; font: inherit; }
+.kid-world-card:hover { border-color: #a8c97a; background: #f8ffeb; transform: translateY(-2px); }
+.kid-world-icon { grid-row: span 2; font-size: 38px; text-align: center; }
+.kid-world-title { font-size: 17px; line-height: 1.2; }
+.kid-world-count { color: #596858; font-size: 13px; font-weight: 700; }
+.kid-world-card progress, .kid-world-progress progress { width: 100%; height: 12px; accent-color: #79ad4b; }
+.kid-world-card progress { grid-column: 2; }
+.kid-world-progress { display: grid; gap: 7px; max-width: 820px; margin: 0 auto 16px; padding: 12px 16px; border: 1px solid #e2ebd9; border-radius: 16px; color: #536650; background: #fff; text-align: center; }
+.kid-world-progress strong { font-size: 14px; }
+.mission-trail { display: flex; align-items: center; width: min(100%, 390px); margin: 12px auto 4px; padding: 0; list-style: none; }
+.mission-trail-step { position: relative; display: flex; flex: 1; justify-content: center; }
+.mission-trail-step:not(:last-child)::after { content: ""; position: absolute; z-index: 0; top: 50%; right: calc(-50% + 18px); left: calc(50% + 18px); height: 5px; border-radius: 4px; background: #d9e1d5; transform: translateY(-50%); }
+.mission-trail-completed:not(:last-child)::after { background: #85c68c; }
+.mission-trail-marker { position: relative; z-index: 1; display: grid; place-items: center; width: 38px; height: 38px; border: 3px solid #d3dfd0; border-radius: 50%; color: #647264; background: white; font-weight: 900; }
+.mission-trail-completed .mission-trail-marker { border-color: #63a975; color: white; background: #63a975; }
+.mission-trail-current .mission-trail-marker { width: 46px; height: 46px; border-color: #d9ad35; color: #604600; background: #ffe28a; box-shadow: 0 0 0 4px #fff1be; }
 .play-path-empty { padding: 30px; text-align: center; color: #596858; }
 .play-parent-note { color: #536650; font-size: 13px; text-align: center; line-height: 1.5; }
 .assignment-topic { margin: 4px 0 0; text-align: center; font-size: clamp(22px, 3vw, 30px); }
@@ -131,6 +156,10 @@ body.kid-challenge-mode .play-finish { min-height: 68px; font-size: 19px; }
   .path-node-icon { width: 42px; height: 42px; }
   .path-node-details strong { font-size: 16px; }
   .path-node-state { grid-column: 2; justify-self: start; padding: 6px 9px; }
+  .kid-path-board .path-nodes::before { left: 31px; }
+  .kid-world-card { grid-template-columns: 42px minmax(0, 1fr); min-height: 108px; padding: 10px; }
+  .kid-world-icon { font-size: 32px; }
+  .kid-world-title { font-size: 15px; }
   .path-prerequisite { line-height: 1.4; }
   .preschool-challenge { padding: 16px 12px; border-radius: 24px; }
   .preschool-challenge-hero { align-items: flex-start; gap: 12px; }
@@ -148,6 +177,9 @@ body.kid-challenge-mode .play-finish { min-height: 68px; font-size: 19px; }
   body.kid-challenge-mode .play-stage { padding: 8px; }
   body.kid-challenge-mode .preschool-challenge { padding: 14px 10px; }
   body.kid-challenge-mode .preschool-choice { min-height: clamp(125px, 19vh, 158px); }
+}
+@media (max-width: 420px) {
+  .kid-world-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
   #play-view * { transition: none; }

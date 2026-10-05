@@ -1,6 +1,6 @@
 import { assessmentPromptFor } from "./taxonomy.js";
-import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-9";
-import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-9";
+import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-11";
+import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-11";
 
 const PRESCHOOL_MIN_AGE = 3;
 
@@ -8,7 +8,11 @@ const COPY = {
   en: {
     hello: "Ready to explore", voiceOff: "Voice off", voiceOn: "Voice on", listen: "Listen",
     age: "I'm learning at age", subject: "Choose a subject", allSubjects: "All subjects",
-    pathTitle: "Your learning path", pathIntro: "Pick a glowing challenge. Finish one to open more of the path! Practice is not a test.", kidPathIntro: "Tap a picture to play!",
+    pathTitle: "Your learning path", pathIntro: "Pick a glowing challenge. Finish one to open more of the path! Practice is not a test.", kidPathIntro: "Choose a world or play your next game!",
+    trailTitle: "Your adventure trail", chooseWorld: "Choose a world", worldsIntro: "Choose a world to see its trail, or play your next adventure.",
+    continueTrail: "Your next adventure", continueAction: "Play this game", allWorlds: "All worlds",
+    worldProgress: "{done} of {total} games played", trailSteps: "Steps in this adventure",
+    stepComplete: "done", stepCurrent: "now", stepUpcoming: "up next",
     ready: "Choose a game", locked: "Coming up", done: "Done for now", practiced: "Practised", more: "More games",
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
     childChallenge: "A little learning mission", grownupOriginal: "Grown-up: original assignment", grownupSettings: "Grown-up settings", grownupExit: "Grown-up",
@@ -30,7 +34,11 @@ const COPY = {
   ro: {
     hello: "Gata de explorat", voiceOff: "Fără voce", voiceOn: "Cu voce", listen: "Ascultă",
     age: "Învăț la vârsta de", subject: "Alege un domeniu", allSubjects: "Toate domeniile",
-    pathTitle: "Drumul tău de învățare", pathIntro: "Alege o provocare luminoasă. Termină una ca să deschizi altele! Exersarea nu este un test.", kidPathIntro: "Atinge o imagine ca să te joci!",
+    pathTitle: "Drumul tău de învățare", pathIntro: "Alege o provocare luminoasă. Termină una ca să deschizi altele! Exersarea nu este un test.", kidPathIntro: "Alege o lume sau joacă următorul joc!",
+    trailTitle: "Drumul aventurilor", chooseWorld: "Alege o lume", worldsIntro: "Alege o lume ca să-i vezi drumul sau joacă următoarea aventură.",
+    continueTrail: "Următoarea aventură", continueAction: "Joacă jocul", allWorlds: "Toate lumile",
+    worldProgress: "Ai jucat {done} din {total} jocuri", trailSteps: "Pașii acestei aventuri",
+    stepComplete: "terminat", stepCurrent: "acum", stepUpcoming: "urmează",
     ready: "Alege un joc", locked: "Urmează", done: "Gata pentru acum", practiced: "Am exersat", more: "Mai multe jocuri",
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
     childChallenge: "O misiune de învățare", grownupOriginal: "Pentru adult: provocarea originală", grownupSettings: "Setări pentru adult", grownupExit: "Adult",
@@ -70,6 +78,17 @@ const CHILD_TOPIC_NAMES = {
   mt_WcfaSfVT33: "Numărăm fiecare obiect",
   mt_KJeEeTutJI: "Forme plane",
   mt_Qcp2d_kuta: "Forme 3D",
+};
+
+const CHILD_WORLDS = {
+  Computing: { icon: "💻", en: "Tech explorers", ro: "Exploratori digitali" },
+  English: { icon: "📖", en: "Word explorers", ro: "Exploratori ai cuvintelor" },
+  History: { icon: "🏰", en: "Time travelers", ro: "Călători în timp" },
+  "Learning to Learn": { icon: "🧠", en: "Learning tools", ro: "Unelte de învățare" },
+  "Life Skills": { icon: "🛒", en: "Everyday heroes", ro: "Eroi de zi cu zi" },
+  Mathematics: { icon: "🔢", en: "Number explorers", ro: "Exploratori ai numerelor" },
+  "Personal & Social Development": { icon: "🤝", en: "Feelings & friends", ro: "Prieteni și emoții" },
+  Science: { icon: "🔬", en: "Nature explorers", ro: "Exploratori în natură" },
 };
 
 function childTopicName(topic, language) {
@@ -326,8 +345,11 @@ export class PlayView {
     age.value = String(this.age);
     age.addEventListener("change", () => {
       this.age = Number(age.value);
+      this.subject = "";
       try { globalThis.localStorage.setItem("marble-taxonomy:play-age", String(this.age)); } catch { /* Optional preference. */ }
       this.availableLimit = this.age <= 5 ? 4 : 8;
+      this.completedLimit = this.age <= 5 ? 4 : 6;
+      this.lockedLimit = this.age <= 5 ? 4 : 6;
       this.selectedTopicId = null;
       this.render();
     });
@@ -338,18 +360,37 @@ export class PlayView {
     subject.append(new Option(c.allSubjects, ""));
     for (const name of this.taxonomy.subjects) subject.append(new Option(name, name));
     subject.value = this.subject;
-    subject.addEventListener("change", () => { this.subject = subject.value; this.render(); });
+    subject.addEventListener("change", () => {
+      this.subject = subject.value;
+      this.availableLimit = this.age <= 5 ? 4 : 8;
+      this.completedLimit = this.age <= 5 ? 4 : 6;
+      this.lockedLimit = this.age <= 5 ? 4 : 6;
+      this.scrollToTop();
+      this.render();
+    });
     subjectLabel.append(subject);
     filters.append(ageLabel, subjectLabel);
     const parentSettings = node("details", "play-parent-settings");
     parentSettings.append(node("summary", "", `🧑 ${c.grownupSettings}`), filters);
     const pathSettings = kidPath ? parentSettings : filters;
 
-    const heading = node("h2", "play-instruction", c.pathTitle);
-    const introText = kidPath ? c.kidPathIntro : c.pathIntro;
+    const world = CHILD_WORLDS[this.subject];
+    const headingText = kidPath
+      ? (world ? world[this.lang] : c.trailTitle)
+      : c.pathTitle;
+    const heading = node("h2", "play-instruction", headingText);
+    const introText = kidPath ? (world ? `${world[this.lang]}!` : c.worldsIntro) : c.pathIntro;
     const intro = node("p", "play-path-intro", introText);
     const controls = node("div", "play-map-controls");
     controls.append(button(`🔊 ${c.listen}`, () => this.speak(introText)));
+    if (kidPath && world) controls.append(button(`🗺️ ${c.allWorlds}`, () => {
+      this.subject = "";
+      this.availableLimit = 4;
+      this.completedLimit = 4;
+      this.lockedLimit = 4;
+      this.scrollToTop();
+      this.render();
+    }));
     const board = node("div", "learning-path-board");
     if (kidPath) board.classList.add("kid-path-board");
     board.setAttribute("role", "group");
@@ -372,17 +413,24 @@ export class PlayView {
     // The constructor can render once before Play becomes the active view. Base
     // the initial page size on the child's age, not that first hidden render.
     this.availableLimit = this.availableLimit ?? (this.age <= 5 ? 4 : 8);
-    this.lockedLimit = this.lockedLimit ?? 6;
-    this.completedLimit = this.completedLimit ?? 6;
+    this.lockedLimit = this.lockedLimit ?? (kidPath ? 4 : 6);
+    this.completedLimit = this.completedLimit ?? (kidPath ? 4 : 6);
     this.pathBoard = board;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.classList.add("path-connections");
     svg.setAttribute("aria-hidden", "true");
     board.append(svg);
+    if (kidPath && !this.subject) {
+      this.renderKidTrailHome(board, available);
+      this.stage.append(pathSettings, heading, intro, controls, board);
+      return;
+    }
+    if (kidPath) board.append(this.renderKidWorldProgress(available, locked, completed));
     const lanes = kidPath
       ? [
         ...(completed.length ? [{ state: "completed", topics: completed, limit: this.completedLimit, copy: c.done }] : []),
         { state: "available", topics: available, limit: this.availableLimit, copy: c.ready },
+        { state: "locked", topics: locked, limit: this.lockedLimit, copy: c.locked },
       ]
       : [
         { state: "completed", topics: completed, limit: this.completedLimit, copy: c.done },
@@ -398,7 +446,9 @@ export class PlayView {
       for (const item of visible) {
         const topic = laneData.state === "locked" ? item.topic : item;
         const unmet = laneData.state === "locked" ? item.unmet : [];
-        list.append(this.assignmentNode(topic, laneData.state, unmet));
+        const pathNode = this.assignmentNode(topic, laneData.state, unmet);
+        if (kidPath && laneData.state === "available" && topic.id === available[0]?.id) pathNode.classList.add("path-node-current");
+        list.append(pathNode);
       }
       if (!visible.length) list.append(node("p", "path-lane-empty", laneData.state === "completed" ? c.waiting : c.noPath));
       lane.append(list);
@@ -410,6 +460,67 @@ export class PlayView {
     }
     this.stage.append(pathSettings, heading, intro, controls, board);
     requestAnimationFrame(() => this.drawPathLinks());
+  }
+
+  renderKidTrailHome(board, available) {
+    const c = this.copy;
+    if (available.length) {
+      const next = node("section", "kid-continue-card");
+      next.append(node("p", "play-eyebrow", `✨ ${c.continueTrail}`));
+      const task = this.assignmentNode(available[0], "available");
+      task.classList.add("path-node-current", "kid-continue-node");
+      next.append(task);
+      board.append(next);
+    }
+
+    const worlds = node("section", "kid-worlds");
+    worlds.append(node("h3", "path-section-title", c.chooseWorld));
+    const grid = node("div", "kid-world-grid");
+    for (const subject of this.taxonomy.subjects) {
+      const topicList = this.taxonomy.topics.filter((topic) =>
+        topic.subject === subject && topic.ageRangeStart <= this.age && topic.ageRangeEnd >= this.age,
+      );
+      if (!topicList.length) continue;
+      const completed = topicList.filter((topic) => pathComplete(this.profile?.progress ?? {}, topic.id)).length;
+      const label = c.worldProgress.replace("{done}", String(completed)).replace("{total}", String(topicList.length));
+      const definition = CHILD_WORLDS[subject] ?? { icon: "✨", en: subject, ro: subject };
+      const card = button("", () => {
+        this.subject = subject;
+        this.availableLimit = 4;
+        this.completedLimit = 4;
+        this.lockedLimit = 4;
+        this.scrollToTop();
+        this.render();
+      }, "kid-world-card");
+      card.setAttribute("aria-pressed", "false");
+      card.append(
+        node("span", "kid-world-icon", definition.icon),
+        node("strong", "kid-world-title", definition[this.lang]),
+        node("span", "kid-world-count", label),
+      );
+      const progress = document.createElement("progress");
+      progress.max = topicList.length;
+      progress.value = completed;
+      progress.setAttribute("aria-label", label);
+      card.append(progress);
+      grid.append(card);
+    }
+    worlds.append(grid);
+    board.append(worlds);
+  }
+
+  renderKidWorldProgress(available, locked, completed) {
+    const c = this.copy;
+    const total = available.length + locked.length + completed.length;
+    const label = c.worldProgress.replace("{done}", String(completed.length)).replace("{total}", String(total));
+    const summary = node("section", "kid-world-progress");
+    summary.append(node("strong", "", label));
+    const progress = document.createElement("progress");
+    progress.max = total || 1;
+    progress.value = completed.length;
+    progress.setAttribute("aria-label", label);
+    summary.append(progress);
+    return summary;
   }
 
   drawPathLinks() {
@@ -491,7 +602,10 @@ export class PlayView {
     details.append(node("strong", "", childTopicName(topic, this.lang)));
     if (!(this.visible && this.age <= 5)) details.append(node("small", "", `${topic.subject} · ages ${topic.ageRangeStart}–${topic.ageRangeEnd}`));
     if (state === "locked" && unmet.length) details.append(node("small", "path-prerequisite", `${c.prerequisite} ${unmet.slice(0, 2).map(({ topic: prerequisite }) => childTopicName(prerequisite, this.lang)).join(", ")}${unmet.length > 2 ? ` +${unmet.length - 2}` : ""}`));
-    item.append(details, node("span", "path-node-state", state === "available" ? c.play : state === "completed" ? (practiced ? c.practiced : c.completed) : c.lockedLabel));
+    const stateLabel = state === "available"
+      ? (this.visible && this.age <= 5 ? c.continueAction : c.play)
+      : state === "completed" ? (practiced ? c.practiced : c.completed) : c.lockedLabel;
+    item.append(details, node("span", "path-node-state", stateLabel));
     return item;
   }
 
@@ -552,6 +666,7 @@ export class PlayView {
     card.append(header);
 
     const completed = session.completedTasks;
+    card.append(this.renderMissionTrail(assessment.tasks.length, completed));
     const task = assessment.tasks[session.completedTasks];
     if (!task) {
       card.append(node("p", "child-assessment-progress", `⭐ ${assessment.tasks.length} / ${assessment.tasks.length}`));
@@ -673,6 +788,22 @@ export class PlayView {
     card.append(choices, feedback);
     if (task.select === "multiple") card.append(checkAnswer);
     return card;
+  }
+
+  renderMissionTrail(total, completed) {
+    const c = this.copy;
+    const steps = node("ol", "mission-trail");
+    steps.setAttribute("aria-label", c.trailSteps);
+    for (let index = 0; index < total; index += 1) {
+      const state = index < completed ? "completed" : index === completed ? "current" : "upcoming";
+      const step = node("li", `mission-trail-step mission-trail-${state}`);
+      const label = state === "completed" ? c.stepComplete : state === "current" ? c.stepCurrent : c.stepUpcoming;
+      step.setAttribute("aria-label", `${c.mission} ${index + 1}: ${label}`);
+      if (state === "current") step.setAttribute("aria-current", "step");
+      step.append(node("span", "mission-trail-marker", state === "completed" ? "✓" : String(index + 1)));
+      steps.append(step);
+    }
+    return steps;
   }
 
   renderChallenge(topic) {
