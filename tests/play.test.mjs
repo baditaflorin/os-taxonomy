@@ -38,6 +38,24 @@ test('finishing a hard prerequisite unlocks its next quick assignment', () => {
   assert.ok(nextPath.available.some(({ id }) => id === dependency.topicId));
 });
 
+test('finishing a self-guided practice mission unlocks the next step without claiming mastery', () => {
+  const dependency = dependencies.find(({ topicId, prerequisiteId, strength }) => {
+    if (strength !== 'hard') return false;
+    const topic = taxonomy.byId.get(topicId);
+    const prerequisite = taxonomy.byId.get(prerequisiteId);
+    return topic && prerequisite && topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5 &&
+      prerequisite.ageRangeStart <= 5 && prerequisite.ageRangeEnd >= 5 &&
+      taxonomy.prerequisites.get(topicId).filter(({ strength: edgeStrength }) => edgeStrength === 'hard').length === 1;
+  });
+  assert.ok(dependency);
+
+  const path = getPlayPath(taxonomy, {
+    [dependency.prerequisiteId]: { status: 'practiced', updatedAt: '2026-01-01T00:00:00.000Z' },
+  }, 5);
+  assert.ok(path.completed.some(({ id }) => id === dependency.prerequisiteId));
+  assert.ok(path.available.some(({ id }) => id === dependency.topicId));
+});
+
 test('topics without evidence lists still receive a playable path assignment', () => {
   const topic = topics.find(({ evidence }) => !evidence?.length);
   assert.ok(topic, 'expected at least one topic without evidence entries');

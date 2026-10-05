@@ -1,7 +1,7 @@
 export const STORAGE_KEY = "marble-taxonomy:learner-profiles";
-export const STORAGE_VERSION = 2;
-export const PROGRESS_STATUSES = new Set(["learning", "mastered"]);
-export const ACTIVITY_ACTIONS = new Set(["learning", "mastered", "assessed", "cleared"]);
+export const STORAGE_VERSION = 3;
+export const PROGRESS_STATUSES = new Set(["learning", "practiced", "mastered"]);
+export const ACTIVITY_ACTIONS = new Set(["learning", "practiced", "mastered", "assessed", "cleared"]);
 const ACTIVITY_LIMIT = 500;
 
 function makeId() {
@@ -56,7 +56,7 @@ export function sanitizeState(value) {
     if (candidate.progress && typeof candidate.progress === "object") {
       for (const [topicId, entry] of Object.entries(candidate.progress)) {
         if (!topicId.startsWith("mt_") || !PROGRESS_STATUSES.has(entry?.status)) continue;
-        const assessment = sanitizeAssessment(entry.assessment);
+        const assessment = entry.status === "mastered" ? sanitizeAssessment(entry.assessment) : undefined;
         progress[topicId] = {
           status: entry.status,
           updatedAt: typeof entry.updatedAt === "string" ? entry.updatedAt : new Date(0).toISOString(),
@@ -166,10 +166,10 @@ export class ProfileStore {
 
     const activeProfile = this.#state.profiles.find(({ id }) => id === this.#state.activeProfileId);
     const previous = activeProfile?.progress[topicId];
-    if (!verified && (previous?.status ?? null) === status) return this.state;
+    if (!verified && (previous?.status ?? null) === status && status !== "practiced") return this.state;
 
     const timestamp = this.#now().toISOString();
-    const action = verified ? "assessed" : status === "learning" ? "learning" : status === "mastered" ? "mastered" : "cleared";
+    const action = verified ? "assessed" : status === "learning" ? "learning" : status === "practiced" ? "practiced" : status === "mastered" ? "mastered" : "cleared";
     return this.#commit({
       ...this.#state,
       profiles: this.#state.profiles.map((profile) => {

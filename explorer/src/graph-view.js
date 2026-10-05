@@ -201,9 +201,9 @@ export class GraphView {
       context.arc(node.x, node.y, selected ? node.radius + 4 : related ? node.radius + 2 : node.radius, 0, Math.PI * 2);
       context.fill();
 
-      if (entry?.status === "learning" || entry?.status === "mastered") {
+      if (entry?.status === "learning" || entry?.status === "practiced" || entry?.status === "mastered") {
         context.globalAlpha = dimmed ? 0.24 : 1;
-        context.strokeStyle = entry.assessment?.verified ? "#fff3a6" : entry.status === "mastered" ? "#7df0bd" : "#ffb454";
+        context.strokeStyle = entry.assessment?.verified ? "#fff3a6" : entry.status === "mastered" ? "#7df0bd" : entry.status === "practiced" ? "#8ed8ff" : "#ffb454";
         context.lineWidth = (entry.assessment?.verified ? 3 : 2) / Math.max(0.55, this.#transform.scale);
         context.beginPath();
         context.arc(node.x, node.y, node.radius + 3.5, 0, Math.PI * 2);

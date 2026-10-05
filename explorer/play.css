@@ -43,6 +43,8 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .path-prerequisite { color: #657064 !important; }
 .path-node-completed { border-color: #b6dec6; background: #f0fbf3; }
 .path-node-completed .path-node-icon, .path-node-completed .path-node-state { color: #1d7044; background: #d0f0dd; }
+.path-node-practiced { border-color: #b8e5f7; background: #f1fbff; }
+.path-node-practiced .path-node-icon, .path-node-practiced .path-node-state { color: #255c74; background: #d8f1fb; }
 .path-more { justify-self: center; min-height: 44px; font-size: 14px; }
 .play-path-empty { padding: 30px; text-align: center; color: #596858; }
 .play-parent-note { color: #536650; font-size: 13px; text-align: center; line-height: 1.5; }
@@ -71,9 +73,6 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .child-assessment-check { margin: 12px auto 0; }
 .child-observation-instruction { margin: 18px 0 12px; color: #405a43; font-size: 18px; font-weight: 900; text-align: center; }
 .mission-response-modes .preschool-choice { min-height: 125px; }
-.child-observation-review { max-width: 600px; margin: 20px auto; padding: 18px; border-radius: 18px; background: #fff8df; color: #514b30; font-weight: 800; text-align: center; }
-.child-observation-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; margin-top: 16px; }
-.child-observation-actions .play-button { min-height: 72px; }
 .preschool-response-modes .preschool-choice { min-height: 125px; }
 .grownup-original { max-width: 820px; margin: 18px auto; padding: 14px 18px; border: 2px dashed #c9d8c3; border-radius: 18px; background: #ffffffb8; }
 .grownup-original summary { color: #536650; cursor: pointer; font-size: 15px; font-weight: 800; }

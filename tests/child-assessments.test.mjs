@@ -10,7 +10,7 @@ test('every taxonomy topic has at least one playable child mission', () => {
   for (const topic of topics) {
     const assessment = childAssessmentFor(topic, 'Alex');
     assert.ok(assessment, topic.name);
-    assert.ok(['choice', 'observe'].includes(assessment.kind), topic.name);
+    assert.ok(['choice', 'guided'].includes(assessment.kind), topic.name);
     assert.ok(assessment.tasks.length > 0, topic.name);
     for (const task of assessment.tasks) {
       assert.ok(task.prompt?.en?.trim(), `${topic.name} has an empty mission prompt`);
@@ -39,11 +39,11 @@ test('authored quizzes are only used when every evidence item has an answer-bear
   }
 });
 
-test('topics with no rubric get a single observed challenge without fabricated evidence', () => {
+test('topics with no rubric get a single self-guided mission without fabricated evidence', () => {
   const topic = topics.find(({ evidence }) => evidence.length === 0);
   assert.ok(topic);
   const assessment = childAssessmentFor(topic, 'Alex');
-  assert.equal(assessment.kind, 'observe');
+  assert.equal(assessment.kind, 'guided');
   assert.equal(assessment.tasks.length, 1);
   assert.deepEqual(assessment.tasks[0].evidenceIndexes, []);
   assert.match(assessment.tasks[0].prompt.en, /Alex/);
@@ -53,7 +53,7 @@ test('research-reference-only evidence uses the observable topic prompt instead 
   const topic = topics.find(({ name }) => name === 'Reading for Meaning');
   assert.ok(topic);
   const assessment = childAssessmentFor(topic, 'Alex');
-  assert.equal(assessment.kind, 'observe');
+  assert.equal(assessment.kind, 'guided');
   assert.equal(assessment.tasks.length, 1);
   assert.deepEqual(assessment.tasks[0].evidenceIndexes, []);
   assert.match(assessment.tasks[0].prompt.en, /Alex/);

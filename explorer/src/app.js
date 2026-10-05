@@ -1,7 +1,7 @@
 import { GraphView, SUBJECT_COLORS } from "./graph-view.js";
 import { filterLogbookTopics, getProgressStats, getRecommendedTopics, getSubjectJourneys } from "./logbook.js";
 import { ProfileStore } from "./profile-store.js";
-import { PlayView } from "./play-view.js?v=assignment-path-5";
+import { PlayView } from "./play-view.js?v=assignment-path-6";
 import { assessmentPromptFor, loadTaxonomy } from "./taxonomy.js";
 
 const elements = Object.fromEntries(
@@ -79,7 +79,7 @@ function renderSummary() {
   const percent = Math.round((stats.known / stats.total) * 100);
   elements["profile-greeting"].textContent = profile ? `${profile.name}'s learning map` : "Learning overview";
   elements["progress-summary"].textContent = profile
-    ? `${stats.known} known · ${stats.learning} learning · ${stats.assessed} assessed · ${stats.notStarted} not started`
+    ? `${stats.known} known · ${stats.practiced} practised · ${stats.learning} learning · ${stats.assessed} assessed · ${stats.notStarted} not started`
     : "Create a private child profile to start tracking progress.";
   elements["progress-bar"].style.width = `${percent}%`;
   const track = elements["progress-bar"].parentElement;
@@ -206,6 +206,7 @@ function logbookSection(title, description) {
 function logbookStatus(entry) {
   if (entry?.assessment?.verified) return { label: "Assessed", className: "assessed", icon: "★" };
   if (entry?.status === "mastered") return { label: "Known", className: "known", icon: "✓" };
+  if (entry?.status === "practiced") return { label: "Practised", className: "practiced", icon: "⭐" };
   if (entry?.status === "learning") return { label: "Learning", className: "learning", icon: "↗" };
   return { label: "Not yet", className: "not-started", icon: "○" };
 }
@@ -231,7 +232,7 @@ function renderLogbook() {
 
   const progress = profile.progress;
   const stats = getProgressStats(taxonomy.topics, progress);
-  const points = stats.known * 10 + stats.assessed * 5 + stats.learning * 2;
+  const points = stats.known * 10 + stats.assessed * 5 + stats.practiced * 3 + stats.learning * 2;
   const level = Math.floor(points / 100) + 1;
   const levelProgress = points % 100;
 
@@ -255,6 +256,7 @@ function renderLogbook() {
   const statsGrid = makeElement("div", { className: "logbook-stats" });
   for (const [value, label, icon, kind] of [
     [stats.known, "Known", "✓", "known"],
+    [stats.practiced, "Practised", "⭐", "practiced"],
     [stats.learning, "Learning", "↗", "learning"],
     [stats.assessed, "Assessed", "★", "assessed"],
     [stats.notStarted, "Not yet", "○", "not-started"],
@@ -313,7 +315,7 @@ function renderLogbook() {
     const copy = makeElement("span");
     copy.append(
       makeElement("strong", { text: journey.subject }),
-      makeElement("small", { text: `${journey.known} known · ${journey.learning} learning · ${journey.total} total` }),
+      makeElement("small", { text: `${journey.known} known · ${journey.practiced} practised · ${journey.learning} learning · ${journey.total} total` }),
     );
     const bar = makeElement("span", { className: "journey-progress" });
     const fill = makeElement("i");
@@ -338,7 +340,7 @@ function renderLogbook() {
   const search = makeElement("input", { attrs: { type: "search", placeholder: "Search the logbook…", "aria-label": "Search the logbook" } });
   search.value = logbookSearch;
   const statusFilter = makeElement("select", { attrs: { "aria-label": "Logbook status" } });
-  for (const [value, label] of [["all", "All concepts"], ["learning", "Learning"], ["known", "Known"], ["assessed", "Assessed"], ["not-started", "Not yet"]]) {
+  for (const [value, label] of [["all", "All concepts"], ["practiced", "Practised"], ["learning", "Learning"], ["known", "Known"], ["assessed", "Assessed"], ["not-started", "Not yet"]]) {
     statusFilter.append(new Option(label, value, false, logbookFilter === value));
   }
   const resultCount = makeElement("span", { className: "ledger-count" });
@@ -364,7 +366,7 @@ function renderLogbook() {
       const badge = makeElement("span", { className: `ledger-status ${status.className}` });
       badge.append(makeElement("i", { text: status.icon }), document.createTextNode(status.label));
       const actions = makeElement("div", { className: "ledger-actions" });
-      if (entry?.status !== "learning") {
+      if (entry?.status !== "learning" && entry?.status !== "practiced") {
         const learn = makeElement("button", { text: "Learn", attrs: { type: "button", title: "Mark as learning" } });
         learn.addEventListener("click", () => { store.setProgress(topic.id, "learning"); showToast(`${profile.name} is learning ${topic.name}`); });
         actions.append(learn);
@@ -397,6 +399,7 @@ function renderLogbook() {
   } else {
     const labels = {
       learning: ["↗", "started learning"],
+      practiced: ["⭐", "finished a practice mission for"],
       mastered: ["✓", "marked as known"],
       assessed: ["★", "completed an assessment for"],
       cleared: ["○", "moved back to not started"],
@@ -660,8 +663,10 @@ async function initialize() {
         showToast(`Assignment complete — great work, ${store.activeProfile?.name}! New challenges are unlocked.`);
       },
       onPractice(topicId) {
-        const profile = store.activeProfile;
-        if (profile && !profile.progress[topicId]) store.setProgress(topicId, "learning");
+        const currentStatus = store.activeProfile?.progress?.[topicId]?.status;
+        if (!store.activeProfile) return;
+        if (currentStatus !== "mastered") store.setProgress(topicId, "practiced");
+        showToast("Practice complete — the next challenge is open!");
       },
       onNeedProfile() { openProfileDialog("add"); },
       onCelebrate: celebrate,

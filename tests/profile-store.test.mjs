@@ -27,6 +27,17 @@ describe("ProfileStore", () => {
     assert.equal(store.activeProfile.progress.mt_two, undefined);
   });
 
+  it("records child-finished practice separately from known and assessed mastery", () => {
+    const store = new ProfileStore(new MemoryStorage(), () => date);
+    store.addProfile("Ada");
+    store.setProgress("mt_one", "practiced");
+    store.setProgress("mt_one", "practiced");
+
+    assert.equal(store.activeProfile.progress.mt_one.status, "practiced");
+    assert.equal(store.activeProfile.progress.mt_one.assessment, undefined);
+    assert.deepEqual(store.activeProfile.activities.map(({ action }) => action), ["practiced", "practiced"]);
+  });
+
   it("records verified assessment evidence with mastery", () => {
     const store = new ProfileStore(new MemoryStorage(), () => date);
     store.addProfile("Ada");
@@ -66,7 +77,7 @@ describe("ProfileStore", () => {
     first.setProgress("mt_one", "learning");
     const restored = new ProfileStore(storage, () => date);
 
-    assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).version, 2);
+    assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).version, 3);
     assert.equal(restored.activeProfile.name, "Ada");
     assert.equal(restored.activeProfile.progress.mt_one.status, "learning");
   });

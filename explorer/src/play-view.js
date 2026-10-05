@@ -1,5 +1,5 @@
 import { assessmentPromptFor } from "./taxonomy.js";
-import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-5";
+import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-6";
 import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js";
 
 const PRESCHOOL_MIN_AGE = 3;
@@ -8,56 +8,54 @@ const COPY = {
   en: {
     hello: "Ready to explore", voiceOff: "Voice off", voiceOn: "Voice on", listen: "Listen",
     age: "I'm learning at age", subject: "Choose a subject", allSubjects: "All subjects",
-    pathTitle: "Your learning path", pathIntro: "Pick a glowing challenge. Finish one to open more of the path!",
-    ready: "Ready to play", locked: "Coming up", done: "Known", more: "Show more challenges",
+    pathTitle: "Your learning path", pathIntro: "Pick a glowing challenge. Finish one to open more of the path! Practice is not a test.",
+    ready: "Ready to play", locked: "Coming up", done: "Done for now", practiced: "Practised", more: "Show more challenges",
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
-    childChallenge: "A little learning mission", preschoolHint: "Pick a picture, then tell or show a grown-up what you noticed.",
+    childChallenge: "A little learning mission", preschoolHint: "Pick a picture, then tell or show what you noticed.",
     pictureWarmup: "Bonus picture warm-up (optional)",
     tapPicture: "Tap a big picture", tellIt: "I can say it", pointToIt: "I can point", showWithToys: "I can show it with toys",
-    childFallback: "Ask a grown-up to read this little challenge. Then tell, point, or show what you know.",
-    foundIt: "You found it! Tell or show a grown-up how you knew.", goodTry: "Good try! Choose again or ask for a clue.",
-    childReady: "Great! Have a go, then let a grown-up check it.", grownupOriginal: "Grown-up: original assignment",
+    childFallback: "Try this little challenge. Say, point, or show what you know.",
+    foundIt: "You found it! Nice choice.", goodTry: "Good try! Choose again, or listen to the challenge.",
+    childReady: "Nice choice! Now give it a try.", grownupOriginal: "Grown-up: original assignment",
     mission: "Mission", missionCheck: "Check my answer!", missionPass: "Nice thinking! You got this part!", missionRetry: "Not quite. Look again and try another answer.",
-    assessmentHint: "Choose the picture that answers the question. Tap Check when you're ready.", observedHint: "Say, point, draw, or show what you know. A grown-up will listen or watch.",
-    chooseResponseMode: "How will you show what you know? Pick one!",
+    assessmentHint: "Choose the picture that answers the question. Tap Check when you're ready.", guidedHint: "Try the challenge by saying it, pointing, drawing, or using toys. No grown-up check needed.",
+    chooseResponseMode: "How will you try it? Pick one!",
     responseModes: [{ id: "say", icon: "🗣️", label: "Say it" }, { id: "point", icon: "👆", label: "Point to it" }, { id: "show", icon: "🧸", label: "Show with toys" }, { id: "draw", icon: "🎨", label: "Draw it" }],
-    readyToShow: "I showed it!", grownupObserve: "Grown-up: listen or watch, then choose what happened.",
-    observedConfirm: "I saw or heard it — earn a star!", observedRetry: "Not yet — let's try it together.", observedPass: "Brilliant showing! You earned a star!",
-    missionsComplete: "You did every mission!", finishMissions: "Save my stars & unlock the next challenge", chooseAtLeast: "Pick at least two pictures, then check.",
+    readyToShow: "I tried it!", practicePass: "Nice work trying! This mission counts as practice, not a test.",
+    missionsComplete: "You did every mission!", finishMissions: "Save my practice & unlock the next challenge", chooseAtLeast: "Pick at least two pictures, then check.",
     sourceEnglish: "The original taxonomy prompt is in English.", ageThree: "No Quick Assignments are tagged for age 3 in this taxonomy yet. The youngest source age is 4. Try an age-4 challenge together with a grown-up.",
     ageThreeTitle: "For little explorers",
     tryAgeFour: "Show age-4 challenges",
     lockedBy: "First try", unlocks: "This can open", noPath: "No challenges match these choices yet. Try another age or subject.",
     success: "Adventure complete! New challenges may have opened.",
-    stars: "path stars this session", guest: "Playing as a guest. Add a child profile to save progress and open the path.", saved: "Progress stays in this browser. A grown-up can check what you know.",
+    stars: "path stars this session", guest: "Playing as a guest. Add a child profile to save practice and open the path.", saved: "Practice stays in this browser. Grown-ups can separately mark what a child knows.",
     unavailable: "Voice is unavailable in this browser. A grown-up can read the challenge aloud.",
     waiting: "Complete the first challenge to see what it opens.", completed: "Known", lockedLabel: "Locked", prerequisite: "Finish first:",
   },
   ro: {
     hello: "Gata de explorat", voiceOff: "Fără voce", voiceOn: "Cu voce", listen: "Ascultă",
     age: "Învăț la vârsta de", subject: "Alege un domeniu", allSubjects: "Toate domeniile",
-    pathTitle: "Drumul tău de învățare", pathIntro: "Alege o provocare luminoasă. Termină una ca să deschizi altele!",
-    ready: "Gata de joacă", locked: "Urmează", done: "Știe deja", more: "Arată mai multe provocări",
+    pathTitle: "Drumul tău de învățare", pathIntro: "Alege o provocare luminoasă. Termină una ca să deschizi altele! Exersarea nu este un test.",
+    ready: "Gata de joacă", locked: "Urmează", done: "Gata pentru acum", practiced: "Am exersat", more: "Arată mai multe provocări",
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
-    childChallenge: "O misiune de învățare", preschoolHint: "Alege o imagine, apoi spune-i sau arată-i unui adult ce ai observat.",
+    childChallenge: "O misiune de învățare", preschoolHint: "Alege o imagine, apoi spune sau arată ce ai observat.",
     pictureWarmup: "Joc bonus cu imagini (opțional)",
     tapPicture: "Atinge o imagine", tellIt: "Îi spun adultului", pointToIt: "Arăt cu degetul", showWithToys: "Arăt cu jucării",
-    childFallback: "Roagă un adult să citească provocarea. Apoi spune, arată cu degetul sau folosește jucării.",
-    foundIt: "Ai găsit! Spune-i sau arată-i adultului cum ai aflat.", goodTry: "Bravo că ai încercat! Alege din nou sau cere un indiciu.",
-    childReady: "Minunat! Încearcă, apoi un adult poate verifica.", grownupOriginal: "Pentru adult: provocarea originală",
+    childFallback: "Încearcă această provocare. Spune, arată cu degetul sau folosește jucării.",
+    foundIt: "Ai găsit! Ai ales bine.", goodTry: "Bravo că ai încercat! Alege din nou sau ascultă provocarea.",
+    childReady: "Ai ales! Acum încearcă.", grownupOriginal: "Pentru adult: provocarea originală",
     mission: "Misiunea", missionCheck: "Verifică răspunsul!", missionPass: "Bravo! Ai rezolvat această parte!", missionRetry: "Nu chiar. Uită-te din nou și mai încearcă.",
-    assessmentHint: "Alege imaginea care răspunde la întrebare. Apasă Verifică atunci când ești gata.", observedHint: "Spune, arată cu degetul, desenează sau folosește jucării. Un adult va asculta sau privi.",
-    chooseResponseMode: "Cum vei arăta ce știi? Alege una!",
+    assessmentHint: "Alege imaginea care răspunde la întrebare. Apasă Verifică atunci când ești gata.", guidedHint: "Încearcă provocarea: spune, arată, desenează sau folosește jucării. Nu ai nevoie de verificarea unui adult.",
+    chooseResponseMode: "Cum vrei să încerci? Alege una!",
     responseModes: [{ id: "say", icon: "🗣️", label: "Spune" }, { id: "point", icon: "👆", label: "Arată cu degetul" }, { id: "show", icon: "🧸", label: "Arată cu jucării" }, { id: "draw", icon: "🎨", label: "Desenează" }],
-    readyToShow: "Ți-am arătat!", grownupObserve: "Adult: ascultă sau privește, apoi alege ce s-a întâmplat.",
-    observedConfirm: "Am văzut sau auzit — primești o stea!", observedRetry: "Încă nu — hai să mai încercăm împreună.", observedPass: "Minunat! Ai câștigat o stea!",
-    missionsComplete: "Ai terminat toate misiunile!", finishMissions: "Salvează steluțele și deschide următoarea provocare", chooseAtLeast: "Alege cel puțin două imagini, apoi verifică.",
+    readyToShow: "Am încercat!", practicePass: "Bravo că ai încercat! Misiunea înseamnă exersare, nu test.",
+    missionsComplete: "Ai terminat toate misiunile!", finishMissions: "Salvează exersarea și deschide următoarea provocare", chooseAtLeast: "Alege cel puțin două imagini, apoi verifică.",
     sourceEnglish: "Textul original din taxonomie este în engleză.", ageThree: "Taxonomia nu are încă provocări rapide etichetate pentru 3 ani. Cele mai mici provocări din sursă sunt de la 4 ani. Încearcă una împreună cu un adult.",
     ageThreeTitle: "Pentru micii exploratori",
     tryAgeFour: "Arată provocările pentru 4 ani",
     lockedBy: "Încearcă mai întâi", unlocks: "Aceasta poate deschide", noPath: "Nu sunt provocări pentru aceste alegeri. Încearcă altă vârstă sau domeniu.",
     success: "Aventură terminată! S-ar putea să se fi deschis provocări noi.",
-    stars: "stele pe drum în sesiunea aceasta", guest: "Te joci ca oaspete. Adaugă profilul copilului ca să salvezi progresul și să deschizi drumul.", saved: "Progresul rămâne în acest browser. Un adult poate verifica ce știi.",
+    stars: "stele pe drum în sesiunea aceasta", guest: "Te joci ca oaspete. Adaugă profilul copilului ca să salvezi exersarea și să deschizi drumul.", saved: "Exersarea rămâne în acest browser. Un adult poate marca separat ce știe copilul.",
     unavailable: "Vocea nu este disponibilă în acest browser. Un adult îți poate citi provocarea.",
     waiting: "Termină prima provocare ca să vezi ce deschide.", completed: "Știe", lockedLabel: "Încuiat", prerequisite: "Încearcă mai întâi:",
   },
@@ -81,6 +79,11 @@ function hardPrerequisites(taxonomy, topicId) {
   return taxonomy.prerequisites.get(topicId).filter(({ strength }) => strength === "hard");
 }
 
+function pathComplete(progress, topicId) {
+  const status = progress[topicId]?.status;
+  return status === "mastered" || status === "practiced";
+}
+
 function newAssessmentSession(assessment) {
   const choiceOrders = {};
   for (const [taskIndex, task] of assessment.tasks.entries()) {
@@ -92,13 +95,13 @@ function newAssessmentSession(assessment) {
     }
     choiceOrders[taskIndex] = order;
   }
-  return { completedTasks: 0, selectedChoices: [], selectedMode: null, awaitingConfirmation: false, feedback: null, choiceOrders };
+  return { completedTasks: 0, selectedChoices: [], selectedMode: null, feedback: null, choiceOrders };
 }
 
-function latestMasteredPrerequisiteAt(taxonomy, progress, topicId) {
+function latestCompletedPrerequisiteAt(taxonomy, progress, topicId) {
   return hardPrerequisites(taxonomy, topicId).reduce((latest, { prerequisiteId }) => {
     const entry = progress[prerequisiteId];
-    const updatedAt = entry?.status === "mastered" ? Date.parse(entry.updatedAt) : 0;
+    const updatedAt = pathComplete(progress, prerequisiteId) ? Date.parse(entry.updatedAt) : 0;
     return Number.isFinite(updatedAt) ? Math.max(latest, updatedAt) : latest;
   }, 0);
 }
@@ -114,8 +117,8 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
   for (const topic of inScope) {
     const entry = progress[topic.id];
     const prerequisites = hardPrerequisites(taxonomy, topic.id);
-    const unmet = prerequisites.filter(({ prerequisiteId }) => progress[prerequisiteId]?.status !== "mastered");
-    if (entry?.status === "mastered") completed.push(topic);
+    const unmet = prerequisites.filter(({ prerequisiteId }) => !pathComplete(progress, prerequisiteId));
+    if (pathComplete(progress, topic.id)) completed.push(topic);
     else if (!unmet.length) available.push(topic);
     else locked.push({ topic, unmet });
   }
@@ -138,7 +141,7 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
   }
   const openedAt = new Map(available.map((topic) => [
     topic.id,
-    latestMasteredPrerequisiteAt(taxonomy, progress, topic.id),
+    latestCompletedPrerequisiteAt(taxonomy, progress, topic.id),
   ]));
   available.sort((left, right) =>
     (progress[left.id]?.status === "learning" ? 0 : 1) - (progress[right.id]?.status === "learning" ? 0 : 1) ||
@@ -151,10 +154,11 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
 }
 
 export class PlayView {
-  constructor(root, { taxonomy, onAssess, onNeedProfile, onCelebrate }) {
+  constructor(root, { taxonomy, onAssess, onPractice, onNeedProfile, onCelebrate }) {
     this.root = root;
     this.taxonomy = taxonomy;
     this.onAssess = onAssess;
+    this.onPractice = onPractice;
     this.onNeedProfile = onNeedProfile;
     this.onCelebrate = onCelebrate;
     this.lang = "en";
@@ -415,7 +419,8 @@ export class PlayView {
 
   assignmentNode(topic, state, unmet = []) {
     const c = this.copy;
-    const item = node(state === "locked" ? "div" : "button", `path-node path-node-${state}`);
+    const practiced = state === "completed" && this.profile?.progress?.[topic.id]?.status === "practiced";
+    const item = node(state === "locked" ? "div" : "button", `path-node path-node-${state}${practiced ? " path-node-practiced" : ""}`);
     if (item instanceof HTMLButtonElement) {
       item.type = "button";
       item.addEventListener("click", () => {
@@ -432,12 +437,12 @@ export class PlayView {
     this.visiblePathNodes.set(topic.id, item);
     const icon = state === "available"
       ? preschoolIconFor(topic)
-      : state === "completed" ? "✓" : "🔒";
+      : state === "completed" ? (practiced ? "⭐" : "✓") : "🔒";
     item.append(node("span", "path-node-icon", icon));
     const details = node("span", "path-node-details");
     details.append(node("strong", "", topic.name), node("small", "", `${topic.subject} · ages ${topic.ageRangeStart}–${topic.ageRangeEnd}`));
     if (state === "locked" && unmet.length) details.append(node("small", "path-prerequisite", `${c.prerequisite} ${unmet.slice(0, 2).map(({ topic: prerequisite }) => prerequisite?.name ?? "another challenge").join(", ")}${unmet.length > 2 ? ` +${unmet.length - 2}` : ""}`));
-    item.append(details, node("span", "path-node-state", state === "available" ? c.play : state === "completed" ? c.completed : c.lockedLabel));
+    item.append(details, node("span", "path-node-state", state === "available" ? c.play : state === "completed" ? (practiced ? c.practiced : c.completed) : c.lockedLabel));
     return item;
   }
 
@@ -531,20 +536,24 @@ export class PlayView {
   }
 
   finishChildAssessment(topic, assessment) {
-    const evidence = [...new Set(assessment.tasks.flatMap(({ evidenceIndexes, evidenceIndex }) =>
-      evidenceIndexes ?? (Number.isInteger(evidenceIndex) ? [evidenceIndex] : []),
-    ))];
     if (!this.profile) {
       this.onNeedProfile();
       return;
     }
+
+    const evidence = assessment.kind === "choice"
+      ? [...new Set(assessment.tasks.flatMap(({ evidenceIndexes, evidenceIndex }) =>
+        evidenceIndexes ?? (Number.isInteger(evidenceIndex) ? [evidenceIndex] : []),
+      ))]
+      : [];
 
     this.activityResponses.delete(topic.id);
     this.assessmentSessions.delete(topic.id);
     this.screen = "path";
     this.selectedTopicId = null;
     this.stars += 1;
-    this.onAssess(topic.id, evidence);
+    if (assessment.kind === "choice") this.onAssess(topic.id, evidence);
+    else this.onPractice(topic.id);
     this.onCelebrate();
     this.scrollToTop();
     this.render();
@@ -566,7 +575,7 @@ export class PlayView {
     const intro = node("div", "preschool-challenge-copy");
     intro.append(
       node("p", "play-eyebrow", c.childChallenge),
-      node("p", "preschool-hint", assessment.kind === "choice" ? c.assessmentHint : c.observedHint),
+      node("p", "preschool-hint", assessment.kind === "choice" ? c.assessmentHint : c.guidedHint),
     );
     header.append(intro);
     card.append(header);
@@ -595,52 +604,34 @@ export class PlayView {
       card.append(previousFeedback);
     }
 
-    if (assessment.kind === "observe") {
-      if (!session.awaitingConfirmation) {
-        card.append(node("p", "child-observation-instruction", c.chooseResponseMode));
-        const modes = node("div", "preschool-choice-grid mission-response-modes");
-        for (const mode of c.responseModes) {
-          const option = button("", () => {
-            session.selectedMode = mode.id;
-            for (const candidate of modes.querySelectorAll("button")) {
-              const selected = candidate.dataset.mode === mode.id;
-              candidate.setAttribute("aria-pressed", String(selected));
-              candidate.classList.toggle("preschool-choice-selected", selected);
-            }
-            ready.disabled = false;
-          }, "preschool-choice mission-response-mode");
-          option.dataset.mode = mode.id;
-          option.append(node("span", "preschool-choice-icon", mode.icon), node("span", "preschool-choice-label", mode.label));
-          option.setAttribute("aria-pressed", String(session.selectedMode === mode.id));
-          option.classList.toggle("preschool-choice-selected", session.selectedMode === mode.id);
-          modes.append(option);
-        }
-        const ready = button(c.readyToShow, () => {
-          session.awaitingConfirmation = true;
-          session.feedback = null;
-          this.render();
-        }, "play-button play-finish child-assessment-check");
-        ready.disabled = !session.selectedMode;
-        card.append(modes, ready);
-      } else {
-        card.append(node("p", "grownup-intro child-observation-review", c.grownupObserve));
-        const actions = node("div", "child-observation-actions");
-        actions.append(button(c.observedConfirm, () => {
-          session.completedTasks += 1;
-          session.selectedMode = null;
-          session.awaitingConfirmation = false;
-          session.feedback = { success: true, text: c.observedPass };
-          this.render();
-          if (this.voiceOn) this.speak(c.observedPass);
-        }, "play-button play-finish"));
-        actions.append(button(c.observedRetry, () => {
-          session.selectedMode = null;
-          session.awaitingConfirmation = false;
-          session.feedback = { success: false, text: c.observedRetry };
-          this.render();
-        }, "play-button play-learning"));
-        card.append(actions);
+    if (assessment.kind === "guided") {
+      card.append(node("p", "child-observation-instruction", c.chooseResponseMode));
+      const modes = node("div", "preschool-choice-grid mission-response-modes");
+      for (const mode of c.responseModes) {
+        const option = button("", () => {
+          session.selectedMode = mode.id;
+          for (const candidate of modes.querySelectorAll("button")) {
+            const selected = candidate.dataset.mode === mode.id;
+            candidate.setAttribute("aria-pressed", String(selected));
+            candidate.classList.toggle("preschool-choice-selected", selected);
+          }
+          ready.disabled = false;
+        }, "preschool-choice mission-response-mode");
+        option.dataset.mode = mode.id;
+        option.append(node("span", "preschool-choice-icon", mode.icon), node("span", "preschool-choice-label", mode.label));
+        option.setAttribute("aria-pressed", String(session.selectedMode === mode.id));
+        option.classList.toggle("preschool-choice-selected", session.selectedMode === mode.id);
+        modes.append(option);
       }
+      const ready = button(c.readyToShow, () => {
+        session.completedTasks += 1;
+        session.selectedMode = null;
+        session.feedback = { success: true, text: c.practicePass };
+        this.render();
+        if (this.voiceOn) this.speak(c.practicePass);
+      }, "play-button play-finish child-assessment-check");
+      ready.disabled = !session.selectedMode;
+      card.append(modes, ready);
       return card;
     }
 
@@ -724,7 +715,7 @@ export class PlayView {
       .filter(({ strength, topic: next }) => strength === "hard" && next && (next.ageRangeStart <= this.age && next.ageRangeEnd >= this.age))
       .map(({ topic: next }) => next)
       .filter((next) => hardPrerequisites(this.taxonomy, next.id)
-        .every(({ prerequisiteId }) => prerequisiteId === topic.id || this.profile?.progress?.[prerequisiteId]?.status === "mastered"))
+        .every(({ prerequisiteId }) => prerequisiteId === topic.id || pathComplete(this.profile?.progress ?? {}, prerequisiteId)))
       .slice(0, 3);
     const unlockPreview = node("section", "assignment-unlocks");
     unlockPreview.append(node("strong", "", nextTopics.length ? c.unlocks : c.waiting));

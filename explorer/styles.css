@@ -69,6 +69,7 @@ select:disabled, button:disabled { cursor: not-allowed; opacity: .48; }
 .legend span { display: flex; align-items: center; gap: 4px; }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #72839d; }
 .dot.learning { border: 2px solid #ffb454; background: transparent; }
+.dot.practiced { border: 2px solid #8ed8ff; background: transparent; }
 .dot.mastered { border: 2px solid #7df0bd; background: transparent; }
 .dot.assessed { border: 2px solid #fff3a6; background: #7df0bd; }
 
@@ -139,7 +140,7 @@ select:disabled, button:disabled { cursor: not-allowed; opacity: .48; }
 .level-ring small { margin-top: 3px; color: var(--muted); font-size: 7px; font-weight: 900; letter-spacing: .12em; }
 .level-card > span strong { font-size: 13px; }
 .level-card > span small { margin-top: 4px; color: var(--muted); font-size: 10px; }
-.logbook-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0 38px; }
+.logbook-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 16px 0 38px; }
 .logbook-stat { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 11px; padding: 16px; text-align: left; border: 1px solid var(--line); border-radius: 15px; color: var(--text); background: var(--surface); }
 .logbook-stat:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.24); }
 .logbook-stat > i { grid-row: span 2; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; font-style: normal; background: rgba(255,255,255,.055); }
@@ -147,6 +148,7 @@ select:disabled, button:disabled { cursor: not-allowed; opacity: .48; }
 .logbook-stat span { color: var(--muted); font-size: 10px; }
 .logbook-stat.known > i { color: var(--accent); }
 .logbook-stat.learning > i { color: #ffb454; }
+.logbook-stat.practiced > i { color: #8ed8ff; }
 .logbook-stat.assessed > i { color: #fff3a6; }
 .logbook-stat.not-started > i { color: #8090a8; }
 .logbook-section { margin-top: 38px; }
@@ -190,6 +192,7 @@ select:disabled, button:disabled { cursor: not-allowed; opacity: .48; }
 .ledger-status i { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-style: normal; background: rgba(255,255,255,.05); }
 .ledger-status.known, .ledger-status.known i { color: var(--accent); }
 .ledger-status.learning, .ledger-status.learning i { color: #ffb454; }
+.ledger-status.practiced, .ledger-status.practiced i { color: #8ed8ff; }
 .ledger-status.assessed, .ledger-status.assessed i { color: #fff3a6; }
 .ledger-actions { display: flex; justify-content: flex-end; gap: 5px; }
 .ledger-actions button { min-height: 29px; padding: 0 9px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: rgba(255,255,255,.025); font-size: 9px; font-weight: 700; }
@@ -203,6 +206,7 @@ select:disabled, button:disabled { cursor: not-allowed; opacity: .48; }
 .activity-item:hover { background: var(--surface-2); }
 .activity-item > i { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 10px; color: var(--accent); background: rgba(125,240,189,.08); font-style: normal; }
 .activity-item.learning > i { color: #ffb454; background: rgba(255,180,84,.08); }
+.activity-item.practiced > i { color: #8ed8ff; background: rgba(142,216,255,.08); }
 .activity-item.assessed > i { color: #fff3a6; background: rgba(255,243,166,.08); }
 .activity-item span { font-size: 11px; }
 .activity-item time { color: var(--muted); font-size: 9px; }

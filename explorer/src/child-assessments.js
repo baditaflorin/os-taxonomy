@@ -1,5 +1,5 @@
-// Child-ready answer keys live outside the canonical taxonomy. Each authored
-// task maps to exactly one source evidence item before it can record mastery.
+// Answer-bearing quizzes live outside the canonical taxonomy. Authored tasks map
+// to source evidence; generated guided missions stay practice-only, not mastery.
 import { assessmentPromptFor } from "./taxonomy.js";
 
 const ASSESSMENTS = {
@@ -92,7 +92,7 @@ function guidedAssessment(topic, childName) {
 
   if (!evidence.length || referenceOnly) {
     return {
-      kind: "observe",
+      kind: "guided",
       tasks: [{
         evidenceIndexes: referenceOnly ? [] : evidence.map((_, index) => index),
         prompt: { en: topicPrompt(topic, childName) },
@@ -102,7 +102,7 @@ function guidedAssessment(topic, childName) {
   }
 
   return {
-    kind: "observe",
+    kind: "guided",
     tasks: evidence.map((criterion, index) => ({
       evidenceIndexes: [index],
       prompt: { en: `${childName ? `${childName}, ` : ""}Show what you know: ${makeImperative(criterion)}` },
