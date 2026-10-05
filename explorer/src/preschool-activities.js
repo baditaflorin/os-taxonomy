@@ -143,10 +143,16 @@ const SUBJECT_ICONS = {
   Science: "🔍",
 };
 
+const TOPIC_ICONS = {
+  mt_SsS7GptD_o: "💰",
+  mt_FNSeo9_T2Z: "👛",
+  mt_zrCyqhngYm: "🐷",
+};
+
 export function preschoolActivityFor(topic) {
   return ACTIVITIES[topic.id] ?? null;
 }
 
 export function preschoolIconFor(topic) {
-  return preschoolActivityFor(topic)?.icon ?? SUBJECT_ICONS[topic.subject] ?? "✨";
+  return preschoolActivityFor(topic)?.icon ?? TOPIC_ICONS[topic.id] ?? SUBJECT_ICONS[topic.subject] ?? "✨";
 }

@@ -17,10 +17,15 @@
 .play-path-filters { justify-content: center; margin: 12px 0 20px; }
 .play-filter-label { display: flex; align-items: center; gap: 9px; font-weight: 750; }
 .play-filter { min-width: 150px; }
+.play-parent-settings { max-width: 780px; margin: 8px auto 14px; text-align: center; }
+.play-parent-settings > summary { display: inline-block; padding: 9px 13px; border: 1px solid #d3dfd0; border-radius: 13px; color: #536650; background: #fff; cursor: pointer; font-weight: 750; }
+.play-parent-settings[open] > summary { margin-bottom: 8px; }
 .play-map-controls, .play-activity-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
 .play-activity-bar { justify-content: space-between; }
 .play-stage { max-width: 1000px; margin: 0 auto; background: #ffffffa8; border: 2px solid white; border-radius: 30px; padding: 18px; }
 .learning-path-board { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; column-gap: 48px; row-gap: 18px; padding: 8px 5px; }
+.learning-path-board.kid-path-board { grid-template-columns: minmax(0, 1fr); max-width: 980px; margin: 0 auto; }
+.kid-path-board .path-nodes { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
 .path-connections { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .path-edge { fill: none; stroke: #548b60; stroke-width: 4; stroke-dasharray: 7 6; opacity: .92; }
 .path-edge-locked { stroke: #bc932b; }
@@ -61,6 +66,7 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .preschool-choice:hover { transform: translateY(-3px); border-color: #aac77c; background: #fbfff3; }
 .preschool-choice[aria-pressed="true"], .preschool-choice-selected { border-color: #79ad4b; background: #effbd9; }
 .preschool-choice-correct { border-color: #4a9b65 !important; background: #e5f9e8 !important; }
+.preschool-choice-incorrect { border-color: #d77972 !important; background: #fff0ef !important; }
 .preschool-choice:focus-visible { outline: 4px solid #215fc6; outline-offset: 3px; }
 .preschool-choice-icon { display: block; max-width: 100%; color: #315c36; font-size: clamp(40px, 6vw, 66px); font-weight: 900; line-height: 1.15; overflow-wrap: anywhere; }
 .preschool-choice-label { font-size: 17px; font-weight: 800; line-height: 1.25; }
@@ -73,13 +79,9 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .child-assessment-check { margin: 12px auto 0; }
 .child-observation-instruction { margin: 18px 0 12px; color: #405a43; font-size: 18px; font-weight: 900; text-align: center; }
 .mission-response-modes .preschool-choice { min-height: 125px; }
-.preschool-response-modes .preschool-choice { min-height: 125px; }
 .grownup-original { max-width: 820px; margin: 18px auto; padding: 14px 18px; border: 2px dashed #c9d8c3; border-radius: 18px; background: #ffffffb8; }
 .grownup-original summary { color: #536650; cursor: pointer; font-size: 15px; font-weight: 800; }
 .grownup-original[open] summary { margin-bottom: 12px; }
-.bonus-warmup { max-width: 900px; margin: 16px auto; padding: 12px 16px; border: 2px dashed #c9d8c3; border-radius: 18px; background: #ffffffb8; }
-.bonus-warmup summary { color: #536650; cursor: pointer; font-weight: 800; }
-.bonus-warmup[open] summary { margin-bottom: 12px; }
 .age-three-empty { grid-column: 1 / -1; display: grid; justify-items: center; width: min(100%, 650px); box-sizing: border-box; min-height: 280px; margin: 14px auto; padding: 28px; border: 3px solid white; border-radius: 28px; background: linear-gradient(135deg, #e8f8d5, #e8f2ff); text-align: center; }
 .age-three-icon { font-size: 64px; }
 .age-three-empty h3 { margin: 8px 0; font-size: 24px; }
@@ -93,6 +95,30 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .play-finish { display: block; min-width: min(100%, 310px); margin: 15px auto 4px; background: #cdeb85; }
 .play-learning { display: block; min-width: min(100%, 310px); margin: 10px auto; font-size: 14px; }
 .play-finish:disabled { opacity: .48; cursor: not-allowed; }
+body.kid-play-mode { overflow: hidden; }
+body.kid-play-mode .app-header { display: none; }
+body.kid-play-mode .workspace.play-mode { height: 100dvh; min-height: 100dvh; overflow-y: auto; }
+body.kid-play-mode .play-shell { min-height: 100%; }
+body.kid-challenge-mode .play-shell { max-width: 900px; min-height: 100%; padding: 10px clamp(12px, 4vw, 40px) 18px; }
+body.kid-challenge-mode .play-header h1 { font-size: clamp(26px, 4vw, 34px); }
+body.kid-challenge-mode .play-settings select { display: none; }
+body.kid-challenge-mode .assignment-meta,
+body.kid-challenge-mode .assignment-unlocks { display: none; }
+body.kid-challenge-mode .play-score { margin: 7px 0; padding: 7px 14px; }
+body.kid-challenge-mode .play-activity-bar { margin-bottom: 6px; }
+body.kid-challenge-mode .play-instruction { display: none; }
+body.kid-challenge-mode .assignment-topic { margin: 0 0 6px; font-size: clamp(20px, 3vw, 28px); }
+body.kid-challenge-mode .play-stage { min-height: 0; padding: 12px; }
+body.kid-challenge-mode .preschool-challenge { max-width: 760px; margin: 8px auto; padding: 16px; }
+body.kid-challenge-mode .preschool-challenge-icon { flex-basis: 64px; width: 64px; height: 64px; border-radius: 20px; font-size: 40px; }
+body.kid-challenge-mode .preschool-hint { margin: 4px 0; font-size: 15px; line-height: 1.3; }
+body.kid-challenge-mode .child-assessment-progress { margin-top: 8px; }
+body.kid-challenge-mode .preschool-question { margin: 10px 0 14px; font-size: clamp(24px, 3.5vw, 34px); }
+body.kid-challenge-mode .preschool-choice { min-height: clamp(120px, 18vh, 160px); }
+body.kid-challenge-mode .preschool-choice-icon { font-size: clamp(52px, 7vw, 72px); }
+body.kid-challenge-mode .preschool-choice-label { font-size: clamp(17px, 2vw, 21px); }
+body.kid-challenge-mode .child-assessment-check,
+body.kid-challenge-mode .play-finish { min-height: 68px; font-size: 19px; }
 @media (max-width: 760px) {
   .play-shell { padding: 16px 10px 24px; }
   .play-header { align-items: start; flex-direction: column; gap: 12px; }
@@ -115,10 +141,13 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
   .preschool-choice-icon { font-size: clamp(34px, 11vw, 54px); }
   .preschool-choice-label { font-size: 15px; }
   .age-three-empty { padding: 20px 15px; }
-  .child-observation-actions { grid-template-columns: 1fr; }
-  .child-observation-actions .play-button { min-height: 62px; }
-  .bonus-warmup { padding: 10px 12px; }
   .play-button { padding: 10px 14px; font-size: 14px; }
+  body.kid-play-mode .workspace.play-mode { height: 100dvh; }
+  body.kid-challenge-mode .workspace.play-mode { height: 100dvh; }
+  body.kid-challenge-mode .play-shell { padding: 8px; }
+  body.kid-challenge-mode .play-stage { padding: 8px; }
+  body.kid-challenge-mode .preschool-challenge { padding: 14px 10px; }
+  body.kid-challenge-mode .preschool-choice { min-height: clamp(125px, 19vh, 158px); }
 }
 @media (prefers-reduced-motion: reduce) {
   #play-view * { transition: none; }

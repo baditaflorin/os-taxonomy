@@ -2,15 +2,16 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { childAssessmentFor } from '../explorer/src/child-assessments.js';
+import { preschoolActivityFor } from '../explorer/src/preschool-activities.js';
 
 const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
 
 test('every taxonomy topic has at least one playable child mission', () => {
   assert.ok(topics.length > 1000, 'expected the full taxonomy dataset');
   for (const topic of topics) {
-    const assessment = childAssessmentFor(topic, 'Alex');
+    const assessment = childAssessmentFor(topic);
     assert.ok(assessment, topic.name);
-    assert.ok(['choice', 'guided'].includes(assessment.kind), topic.name);
+    assert.ok(['choice', 'practice-game', 'guided'].includes(assessment.kind), topic.name);
     assert.ok(assessment.tasks.length > 0, topic.name);
     for (const task of assessment.tasks) {
       assert.ok(task.prompt?.en?.trim(), `${topic.name} has an empty mission prompt`);
@@ -39,22 +40,54 @@ test('authored quizzes are only used when every evidence item has an answer-bear
   }
 });
 
-test('topics with no rubric get a single self-guided mission without fabricated evidence', () => {
-  const topic = topics.find(({ evidence }) => evidence.length === 0);
+test('the age-five money journey has a self-checking, bilingual mission for every money topic', () => {
+  const moneyIds = ['mt_SsS7GptD_o', 'mt_FNSeo9_T2Z', 'mt_zrCyqhngYm'];
+  const moneyTopics = moneyIds.map((id) => topics.find((topic) => topic.id === id));
+  assert.ok(moneyTopics.every(Boolean));
+
+  for (const topic of moneyTopics) {
+    assert.ok(topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5, topic.name);
+    const assessment = childAssessmentFor(topic);
+    assert.equal(assessment.kind, 'choice', topic.name);
+    assert.equal(assessment.tasks.length, topic.evidence.length, topic.name);
+    for (const [index, task] of assessment.tasks.entries()) {
+      assert.equal(task.evidenceIndex, index, `${topic.name} task ${index + 1} maps to its source criterion`);
+      assert.ok(task.prompt.en && task.prompt.ro, `${topic.name} has both child languages`);
+      assert.ok(task.choices.every(({ icon, label }) => icon && label?.en && label?.ro), `${topic.name} has visual bilingual options`);
+      assert.ok(task.choices.some(({ correct }) => correct), `${topic.name} has a self-checkable answer`);
+      assert.ok((task.requiredCount ?? 1) <= task.choices.filter(({ correct }) => correct).length, `${topic.name} has enough correct answers`);
+    }
+  }
+});
+
+test('curated picture games are first-class Play missions without claiming full-topic mastery', () => {
+  const gameTopics = topics.filter((topic) => preschoolActivityFor(topic));
+  assert.equal(gameTopics.length, 15);
+  for (const topic of gameTopics) {
+    const assessment = childAssessmentFor(topic);
+    assert.equal(assessment.kind, 'practice-game', topic.name);
+    assert.equal(assessment.tasks.length, 1, topic.name);
+    assert.deepEqual(assessment.tasks[0].evidenceIndexes, [], `${topic.name} game does not claim to cover the full evidence list`);
+    assert.ok(assessment.tasks[0].choices.some(({ correct }) => correct), topic.name);
+  }
+});
+
+test('topics with no rubric get a single self-guided mission without fabricated evidence or repeated child names', () => {
+  const topic = topics.find((candidate) => candidate.evidence.length === 0 && !preschoolActivityFor(candidate));
   assert.ok(topic);
-  const assessment = childAssessmentFor(topic, 'Alex');
+  const assessment = childAssessmentFor(topic);
   assert.equal(assessment.kind, 'guided');
   assert.equal(assessment.tasks.length, 1);
   assert.deepEqual(assessment.tasks[0].evidenceIndexes, []);
-  assert.match(assessment.tasks[0].prompt.en, /Alex/);
+  assert.doesNotMatch(assessment.tasks[0].prompt.en, /Alex/);
 });
 
 test('research-reference-only evidence uses the observable topic prompt instead of asking a child to repeat citations', () => {
   const topic = topics.find(({ name }) => name === 'Reading for Meaning');
   assert.ok(topic);
-  const assessment = childAssessmentFor(topic, 'Alex');
+  const assessment = childAssessmentFor(topic);
   assert.equal(assessment.kind, 'guided');
   assert.equal(assessment.tasks.length, 1);
   assert.deepEqual(assessment.tasks[0].evidenceIndexes, []);
-  assert.match(assessment.tasks[0].prompt.en, /Alex/);
+  assert.doesNotMatch(assessment.tasks[0].prompt.en, /Alex/);
 });

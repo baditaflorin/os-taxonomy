@@ -1,7 +1,7 @@
 import { GraphView, SUBJECT_COLORS } from "./graph-view.js";
 import { filterLogbookTopics, getProgressStats, getRecommendedTopics, getSubjectJourneys } from "./logbook.js";
 import { ProfileStore } from "./profile-store.js";
-import { PlayView } from "./play-view.js?v=assignment-path-6";
+import { PlayView } from "./play-view.js?v=assignment-path-9";
 import { assessmentPromptFor, loadTaxonomy } from "./taxonomy.js";
 
 const elements = Object.fromEntries(
@@ -171,6 +171,7 @@ function celebrate() {
 
 function switchView(view) {
   currentView = view;
+  document.body.classList.remove("kid-play-mode", "kid-challenge-mode");
   const logbook = view === "logbook";
   const playing = view === "play";
   elements.workspace.classList.toggle("play-mode", playing);
@@ -178,6 +179,7 @@ function switchView(view) {
   document.getElementById("play-mode").setAttribute("aria-pressed", String(playing));
   document.getElementById("play-mode").classList.toggle("active", playing);
   play?.stopSpeaking();
+  play?.setVisible(playing);
   elements.workspace.classList.toggle("logbook-mode", logbook);
   elements["logbook-view"].hidden = !logbook;
   elements["graph-mode"].classList.toggle("active", view === "graph");
@@ -669,6 +671,7 @@ async function initialize() {
         showToast("Practice complete — the next challenge is open!");
       },
       onNeedProfile() { openProfileDialog("add"); },
+      onExit() { switchView("graph"); },
       onCelebrate: celebrate,
     });
     store.subscribe(renderProfiles);
