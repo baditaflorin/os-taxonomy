@@ -1,6 +1,6 @@
 import { assessmentPromptFor } from "./taxonomy.js";
-import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-12";
-import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-12";
+import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-13";
+import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-13";
 
 const PRESCHOOL_MIN_AGE = 3;
 
@@ -67,6 +67,45 @@ const COPY = {
   },
 };
 
+// Mixed mode uses Romanian as its scaffold and brings useful English words into
+// the same child-facing instruction. Less prominent caregiver copy stays RO.
+const MIX_COPY = {
+  hello: "Gata de explorat? Ready?", voiceOff: "Fără voce", voiceOn: "Cu voce", listen: "Ascultă / Listen",
+  age: "Învăț la vârsta de", subject: "Alege un world", allSubjects: "Toate lumile",
+  pathTitle: "Drumul tău de învățare / Your learning path",
+  pathIntro: "Alege o provocare luminoasă. Finish one ca să deschizi mai multe! Exersarea nu este un test.",
+  kidPathIntro: "Alege o lume sau play your next game!",
+  trailTitle: "Drumul aventurilor / Your adventure trail", chooseWorld: "Alege un world",
+  worldsIntro: "Alege un world ca să-i vezi trail-ul sau joacă următoarea adventure.",
+  continueTrail: "Next adventure", continueAction: "Joacă acest game", allWorlds: "Toate lumile / All worlds",
+  worldProgress: "Ai jucat {done} din {total} games", trailSteps: "Pașii acestei aventuri",
+  stepComplete: "gata", stepCurrent: "acum", stepUpcoming: "urmează",
+  countingObjects: "Obiecte de numărat / Things to count", allMoved: "Le-ai mutat pe toate! Tap again dacă vrei să le numeri.",
+  moveObject: "Atinge / Tap", revisitObject: "Atinge ca să privești din nou / Tap to look again",
+  countingGameHint: "Mută fiecare obiect, then answer. Poți să-l atingi din nou dacă vrei another look.",
+  missionCompleteHint: "Misiune terminată! Your next adventure te așteaptă.",
+  ready: "Alege un game", locked: "Urmează / Coming up", done: "Gata pentru acum / Done", practiced: "Am exersat / Practised", more: "Mai multe games",
+  play: "Joacă această provocare / Play this challenge", back: "Înapoi la drum / Back to my path",
+  challenge: "Provocarea ta rapidă / Your quick challenge", childChallenge: "O mică learning mission",
+  grownupOriginal: "Pentru adult: original assignment", grownupSettings: "Setări pentru adult", grownupExit: "Adult",
+  mission: "Misiunea / Mission", missionCheck: "Verifică răspunsul / Check my answer!",
+  missionPass: "Bravo! Nice thinking!", missionRetry: "Nu chiar. Look again și mai încearcă.",
+  assessmentHint: "Atinge imaginea care răspunde la întrebare / Tap the picture that answers.",
+  practiceGameHint: "Alege o imagine. Pick one! Dacă nu este cea potrivită, mai încearcă.",
+  guidedHint: "Încearcă: spune, arată, desenează sau folosește jucării. Try it your way!",
+  chooseResponseMode: "Cum vrei să încerci? Choose one!",
+  responseModes: [{ id: "say", icon: "🗣️", label: "Spune / Say it" }, { id: "point", icon: "👆", label: "Arată / Point" }, { id: "show", icon: "🧸", label: "Arată cu toys / Show with toys" }, { id: "draw", icon: "🎨", label: "Desenează / Draw" }],
+  readyToShow: "Am încercat / I tried it!", practicePass: "Bravo că ai încercat! This was practice, not a test.",
+  missionsComplete: "Ai terminat toate misiunile! You did it!", finishMissions: "Hai la următoarea adventure!",
+  finishQuiz: "Termină aventura / Finish my adventure!", chooseAtLeast: "Alege cel puțin două imagini, then check.",
+  ageThreeTitle: "Pentru micii exploratori / Little explorers", tryAgeFour: "Arată provocările pentru 4 ani / Show age-4 games",
+  success: "Aventură terminată! New challenges may have opened.", stars: "stele pe drum this session",
+  guest: "Te joci ca oaspete. Add a child profile ca să salvezi exersarea și să deschizi drumul.",
+  saved: "Exersarea rămâne în acest browser. An adult poate marca separat ce știe copilul.",
+  unavailable: "Vocea nu este disponibilă în acest browser. Un adult îți poate citi challenge-ul.",
+  waiting: "Termină prima provocare ca să vezi ce unlocks.", completed: "Știe / Knows", lockedLabel: "Încuiat / Locked", prerequisite: "Încearcă mai întâi / First:",
+};
+
 const CHILD_TOPIC_NAMES = {
   mt_SsS7GptD_o: "Ce sunt banii?",
   mt_FNSeo9_T2Z: "Cum păstrăm banii în siguranță?",
@@ -100,7 +139,39 @@ const CHILD_WORLDS = {
 };
 
 function childTopicName(topic, language) {
-  return language === "ro" ? CHILD_TOPIC_NAMES[topic.id] ?? topic.name : topic.name;
+  const romanian = CHILD_TOPIC_NAMES[topic.id];
+  if (language === "ro") return romanian ?? topic.name;
+  if (language === "mix" && romanian) return `${romanian} · ${topic.name}`;
+  return topic.name;
+}
+
+function childWorldName(world, language) {
+  if (!world) return "";
+  if (language === "ro") return world.ro;
+  if (language === "mix") return `${world.ro} · ${world.en}`;
+  return world.en;
+}
+
+export function playText(value, language) {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object") return "";
+  if (language === "mix") return value.mix ?? value.ro ?? value.en ?? "";
+  return value[language] ?? value.en ?? value.ro ?? "";
+}
+
+export function missionTextForLanguage(prompt, language) {
+  if (language === "mix") {
+    if (prompt?.mix) return prompt.mix;
+    const question = prompt?.en ?? prompt?.ro ?? "";
+    return question ? `Hai să încercăm. ${question}` : "";
+  }
+  return playText(prompt, language);
+}
+
+function spokenLanguageFor(text, fallback) {
+  return /[ăâîșț]|\b(?:alege|atinge|aventură|bravo|câte|fiecare|hai|încearcă|încercăm|le-ai|mai|mută|numără|poți|să|sunt|toate|următoarea|vrei)\b/i.test(text)
+    ? "ro-RO"
+    : fallback;
 }
 
 function node(tag, className = "", text) {
@@ -212,9 +283,10 @@ export class PlayView {
     this.selectedTopicId = null;
     this.visible = false;
     this.voiceOn = Boolean(globalThis.speechSynthesis && globalThis.SpeechSynthesisUtterance);
+    this.speechGeneration = 0;
     try {
       const savedLanguage = globalThis.localStorage.getItem("marble-taxonomy:play-language");
-      if (savedLanguage === "ro" || savedLanguage === "en") this.lang = savedLanguage;
+      if (savedLanguage === "ro" || savedLanguage === "en" || savedLanguage === "mix") this.lang = savedLanguage;
       const savedAge = Number(globalThis.localStorage.getItem("marble-taxonomy:play-age"));
       if (Number.isInteger(savedAge) && savedAge >= PRESCHOOL_MIN_AGE && savedAge <= taxonomy.maxAge) this.age = savedAge;
       const savedVoice = globalThis.localStorage.getItem("marble-taxonomy:play-voice");
@@ -229,7 +301,7 @@ export class PlayView {
     document.addEventListener("visibilitychange", () => { if (document.hidden) this.stopSpeaking(); });
   }
 
-  get copy() { return COPY[this.lang]; }
+  get copy() { return this.lang === "mix" ? { ...COPY.ro, ...MIX_COPY } : COPY[this.lang]; }
   get activeTopic() { return this.taxonomy.byId.get(this.selectedTopicId); }
   get path() { return getPlayPath(this.taxonomy, this.profile?.progress ?? {}, this.age, this.subject); }
 
@@ -252,18 +324,30 @@ export class PlayView {
     if (changed) this.render();
   }
 
-  stopSpeaking() { globalThis.speechSynthesis?.cancel(); }
+  stopSpeaking() {
+    this.speechGeneration += 1;
+    globalThis.speechSynthesis?.cancel();
+  }
   scrollToTop() {
     const workspace = this.root.closest(".workspace");
     if (workspace) workspace.scrollTop = 0;
   }
-  speak(text, language = this.lang === "ro" ? "ro-RO" : "en-US") {
+  speak(text, language = this.lang === "en" ? "en-US" : "ro-RO") {
     if (!globalThis.speechSynthesis || !globalThis.SpeechSynthesisUtterance) return;
     this.stopSpeaking();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language;
-    utterance.rate = 0.82;
-    globalThis.speechSynthesis.speak(utterance);
+    const generation = this.speechGeneration;
+    const parts = this.lang === "mix"
+      ? String(text).match(/[^.!?]+[.!?]*/g)?.map((part) => part.trim()).filter(Boolean) ?? []
+      : [String(text)];
+    const speakPart = (index) => {
+      if (generation !== this.speechGeneration || index >= parts.length) return;
+      const utterance = new SpeechSynthesisUtterance(parts[index]);
+      utterance.lang = this.lang === "mix" ? spokenLanguageFor(parts[index], language) : language;
+      utterance.rate = 0.82;
+      utterance.onend = () => speakPart(index + 1);
+      globalThis.speechSynthesis.speak(utterance);
+    };
+    speakPart(0);
   }
 
   render() {
@@ -274,7 +358,7 @@ export class PlayView {
     document.body.classList.toggle("kid-play-mode", kidPlay);
     document.body.classList.toggle("kid-challenge-mode", kidChallenge);
     this.root.replaceChildren();
-    this.root.lang = this.lang;
+    this.root.lang = this.lang === "mix" ? "ro" : this.lang;
     const shell = node("div", "play-shell");
     const header = node("header", "play-header");
     const greeting = node("div");
@@ -282,7 +366,7 @@ export class PlayView {
     const settings = node("div", "play-settings");
     const language = node("select");
     language.setAttribute("aria-label", "Play language / Limba jocului");
-    language.append(new Option("English", "en"), new Option("Română", "ro"));
+    language.append(new Option("English", "en"), new Option("Română", "ro"), new Option("Română + English", "mix"));
     language.value = this.lang;
     language.addEventListener("change", () => {
       this.lang = language.value;
@@ -325,7 +409,7 @@ export class PlayView {
   }
 
   missionPrompt(task) {
-    return task.prompt?.[this.lang] ?? task.prompt?.en ?? "";
+    return missionTextForLanguage(task.prompt, this.lang);
   }
 
   spokenChallengeFor(topic) {
@@ -333,13 +417,13 @@ export class PlayView {
     const session = this.assessmentSessions.get(topic.id);
     const task = assessment.tasks[session?.completedTasks ?? 0];
     if (task) {
-      const choices = Array.isArray(task.choices) ? task.choices.map(({ label }) => label[this.lang] ?? label.en).join(", ") : "";
+      const choices = Array.isArray(task.choices) ? task.choices.map(({ label }) => playText(label, this.lang)).join(", ") : "";
       return {
         text: [this.missionPrompt(task), choices].filter(Boolean).join(" "),
-        language: task.language ?? (task.prompt?.[this.lang] ? (this.lang === "ro" ? "ro-RO" : "en-US") : "en-US"),
+        language: this.lang === "mix" ? "ro-RO" : task.language ?? (task.prompt?.[this.lang] ? (this.lang === "ro" ? "ro-RO" : "en-US") : "en-US"),
       };
     }
-    return { text: this.copy.missionsComplete, language: this.lang === "ro" ? "ro-RO" : "en-US" };
+    return { text: this.copy.missionsComplete, language: this.lang === "en" ? "en-US" : "ro-RO" };
   }
 
   renderPath() {
@@ -384,10 +468,10 @@ export class PlayView {
 
     const world = CHILD_WORLDS[this.subject];
     const headingText = kidPath
-      ? (world ? world[this.lang] : c.trailTitle)
+      ? (world ? childWorldName(world, this.lang) : c.trailTitle)
       : c.pathTitle;
     const heading = node("h2", "play-instruction", headingText);
-    const introText = kidPath ? (world ? `${world[this.lang]}!` : c.worldsIntro) : c.pathIntro;
+    const introText = kidPath ? (world ? `${childWorldName(world, this.lang)}!` : c.worldsIntro) : c.pathIntro;
     const intro = node("p", "play-path-intro", introText);
     const controls = node("div", "play-map-controls");
     controls.append(button(`🔊 ${c.listen}`, () => this.speak(introText)));
@@ -503,7 +587,7 @@ export class PlayView {
       card.setAttribute("aria-pressed", "false");
       card.append(
         node("span", "kid-world-icon", definition.icon),
-        node("strong", "kid-world-title", definition[this.lang]),
+        node("strong", "kid-world-title", childWorldName(definition, this.lang)),
         node("span", "kid-world-count", label),
       );
       const progress = document.createElement("progress");
@@ -758,7 +842,7 @@ export class PlayView {
       const option = node("button", "preschool-choice");
       option.type = "button";
       option.setAttribute("aria-pressed", String(session.selectedChoices.includes(index)));
-      option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", choice.label[this.lang]));
+      option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", playText(choice.label, this.lang)));
       option.classList.toggle("preschool-choice-selected", session.selectedChoices.includes(index));
       option.classList.toggle("preschool-choice-incorrect", session.selectedChoices.includes(index) && session.feedback?.success === false);
       option.addEventListener("click", () => {
@@ -835,12 +919,12 @@ export class PlayView {
     if (allMoved && state.questionStartedAt === null) state.questionStartedAt = Date.now();
 
     const stage = node("section", "counting-stage");
-    stage.append(node("h4", "preschool-question", allMoved ? this.missionPrompt(task) : interaction.instruction[this.lang]));
+    stage.append(node("h4", "preschool-question", allMoved ? this.missionPrompt(task) : playText(interaction.instruction, this.lang)));
     const board = node("div", "counting-board");
     const source = node("div", "counting-source");
     source.setAttribute("role", "group");
     source.setAttribute("aria-label", c.countingObjects);
-    const destination = interaction.destination[this.lang];
+    const destination = playText(interaction.destination, this.lang);
     let objectIndex = 0;
 
     for (const [groupIndex, groupCount] of interaction.groups.entries()) {
@@ -857,7 +941,7 @@ export class PlayView {
           state.tappedObjectIndexes.push(currentIndex);
           this.render();
         }, "counting-object counting-object-source-item");
-        object.setAttribute("aria-label", `${c.moveObject} ${interaction.objectLabel[this.lang]} ${currentIndex + 1} ${this.lang === "ro" ? "în" : "to"} ${destination}`);
+        object.setAttribute("aria-label", `${c.moveObject} ${playText(interaction.objectLabel, this.lang)} ${currentIndex + 1} ${this.lang === "en" ? "to" : "în"} ${destination}`);
         group.append(object);
       }
       source.append(group);
@@ -878,7 +962,7 @@ export class PlayView {
           this.render();
         }, `counting-object counting-object-destination-item${state.lastRevisited === index ? " counting-object-revisited" : ""}`)
         : node("span", "counting-object counting-object-destination-item", interaction.objectIcon);
-      if (allMoved) object.setAttribute("aria-label", `${c.revisitObject}: ${interaction.objectLabel[this.lang]} ${index + 1}`);
+      if (allMoved) object.setAttribute("aria-label", `${c.revisitObject}: ${playText(interaction.objectLabel, this.lang)} ${index + 1}`);
       movedItems.append(object);
     }
     destinationArea.append(movedItems);
@@ -902,8 +986,8 @@ export class PlayView {
         this.render();
         if (this.voiceOn) this.speak(c.missionRetry);
       }, "preschool-choice counting-answer");
-      option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", choice.label[this.lang]));
-      option.setAttribute("aria-label", choice.label[this.lang]);
+      option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", playText(choice.label, this.lang)));
+      option.setAttribute("aria-label", playText(choice.label, this.lang));
       answers.append(option);
     }
     stage.append(answers);

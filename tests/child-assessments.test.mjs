@@ -87,6 +87,10 @@ test('counting games make every object tappable and keep answer choices visually
     assert.ok(task.choices.every(({ icon }) => /^\d+$/.test(icon)), `${topic.name} uses number-only answer visuals`);
     assert.ok(task.choices.every(({ value, label }) => Number(label.en.match(/^\d+/)?.[0]) === value), topic.name);
     assert.equal(task.choices.find(({ correct }) => correct).value, interaction.count, topic.name);
+    assert.ok(task.prompt.mix, `${topic.name} has a natural mixed-language question`);
+    assert.ok(interaction.instruction.mix, `${topic.name} has a mixed-language play instruction`);
+    assert.ok(interaction.objectLabel.mix && interaction.destination.mix, `${topic.name} has mixed-language object labels`);
+    assert.ok(task.choices.every(({ label }) => label.mix), `${topic.name} has mixed-language answer labels`);
   }
 });
 

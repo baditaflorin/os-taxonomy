@@ -1,12 +1,19 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { getPlayPath } from '../explorer/src/play-view.js';
+import { getPlayPath, missionTextForLanguage, playText } from '../explorer/src/play-view.js';
 import { buildTaxonomy } from '../explorer/src/taxonomy.js';
 
 const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
 const { dependencies } = JSON.parse(readFileSync(new URL('../data/dependencies.json', import.meta.url)));
 const taxonomy = buildTaxonomy(topics, dependencies);
+
+test('Play can keep English and Romanian together in one mixed-language mode', () => {
+  assert.equal(playText({ en: 'garage', ro: 'garaj', mix: 'garage' }, 'mix'), 'garage');
+  assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?' }, 'mix'), 'Hai să încercăm. How many cars?');
+  assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?', mix: 'Câte toy cars sunt?' }, 'mix'), 'Câte toy cars sunt?');
+  assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?' }, 'ro'), 'Câte mașini?');
+});
 
 test('Play assignments come from the taxonomy quick assessments for the selected age', () => {
   const path = getPlayPath(taxonomy, {}, 5);
