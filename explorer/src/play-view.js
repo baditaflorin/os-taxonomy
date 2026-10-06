@@ -1,6 +1,6 @@
 import { assessmentPromptFor } from "./taxonomy.js";
-import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-11";
-import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-11";
+import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-12";
+import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-12";
 
 const PRESCHOOL_MIN_AGE = 3;
 
@@ -13,6 +13,10 @@ const COPY = {
     continueTrail: "Your next adventure", continueAction: "Play this game", allWorlds: "All worlds",
     worldProgress: "{done} of {total} games played", trailSteps: "Steps in this adventure",
     stepComplete: "done", stepCurrent: "now", stepUpcoming: "up next",
+    countingObjects: "Objects to count", allMoved: "All moved! You can tap one again if you want to count them again.",
+    moveObject: "Tap to move", revisitObject: "Tap to look at this one again",
+    countingGameHint: "Move each one, then answer. You can tap them again if you want another look.",
+    missionCompleteHint: "Mission complete! Your next adventure is ready.",
     ready: "Choose a game", locked: "Coming up", done: "Done for now", practiced: "Practised", more: "More games",
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
     childChallenge: "A little learning mission", grownupOriginal: "Grown-up: original assignment", grownupSettings: "Grown-up settings", grownupExit: "Grown-up",
@@ -39,6 +43,10 @@ const COPY = {
     continueTrail: "Următoarea aventură", continueAction: "Joacă jocul", allWorlds: "Toate lumile",
     worldProgress: "Ai jucat {done} din {total} jocuri", trailSteps: "Pașii acestei aventuri",
     stepComplete: "terminat", stepCurrent: "acum", stepUpcoming: "urmează",
+    countingObjects: "Obiecte de numărat", allMoved: "Toate au fost mutate! Poți atinge un obiect dacă vrei să le numeri din nou.",
+    moveObject: "Atinge ca să muți", revisitObject: "Atinge ca s-o privești din nou",
+    countingGameHint: "Mută-le pe rând, apoi răspunde. Le poți atinge din nou dacă vrei să le mai privești.",
+    missionCompleteHint: "Misiune terminată! Următoarea aventură te așteaptă.",
     ready: "Alege un joc", locked: "Urmează", done: "Gata pentru acum", practiced: "Am exersat", more: "Mai multe jocuri",
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
     childChallenge: "O misiune de învățare", grownupOriginal: "Pentru adult: provocarea originală", grownupSettings: "Setări pentru adult", grownupExit: "Adult",
@@ -621,12 +629,24 @@ export class PlayView {
       ))]
       : [];
 
+    const session = this.assessmentSessions.get(topic.id);
+    const countingTask = assessment.tasks.find(({ interaction }) => interaction?.kind === "tap-each");
+    const observation = countingTask && session?.counting ? {
+      kind: "counting",
+      objectKind: countingTask.interaction.objectLabel?.en ?? "object",
+      objectCount: countingTask.interaction.count,
+      uniqueTaps: session.counting.tappedObjectIndexes.length,
+      revisitTaps: session.counting.revisitTaps,
+      answers: session.counting.answers,
+      responseMs: session.counting.responseMs,
+    } : undefined;
+
     this.assessmentSessions.delete(topic.id);
     this.screen = "path";
     this.selectedTopicId = null;
     this.stars += 1;
     if (assessment.kind === "choice") this.onAssess(topic.id, evidence);
-    else this.onPractice(topic.id);
+    else this.onPractice(topic.id, observation);
     this.onCelebrate();
     this.scrollToTop();
     this.render();
@@ -654,20 +674,24 @@ export class PlayView {
     }
 
     const card = node("section", "child-assessment preschool-challenge");
+    const task = assessment.tasks[session.completedTasks];
     card.setAttribute("aria-label", c.childChallenge);
     const header = node("div", "preschool-challenge-hero");
     header.append(node("span", "preschool-challenge-icon", assessment.icon ?? preschoolIconFor(topic)));
     const intro = node("div", "preschool-challenge-copy");
     intro.append(
       node("p", "play-eyebrow", c.childChallenge),
-      node("p", "preschool-hint", assessment.kind === "guided" ? c.guidedHint : assessment.kind === "practice-game" ? c.practiceGameHint : c.assessmentHint),
+      node("p", "preschool-hint", !task
+        ? c.missionCompleteHint
+        : task.interaction?.kind === "tap-each"
+          ? c.countingGameHint
+          : assessment.kind === "guided" ? c.guidedHint : assessment.kind === "practice-game" ? c.practiceGameHint : c.assessmentHint),
     );
     header.append(intro);
     card.append(header);
 
     const completed = session.completedTasks;
     card.append(this.renderMissionTrail(assessment.tasks.length, completed));
-    const task = assessment.tasks[session.completedTasks];
     if (!task) {
       card.append(node("p", "child-assessment-progress", `⭐ ${assessment.tasks.length} / ${assessment.tasks.length}`));
       card.append(node("h4", "preschool-question", c.missionsComplete));
@@ -676,6 +700,11 @@ export class PlayView {
       card.append(stars);
       const finishLabel = assessment.kind === "choice" ? c.finishQuiz : c.finishMissions;
       card.append(button(finishLabel, () => this.finishChildAssessment(topic, assessment), "play-button play-finish"));
+      return card;
+    }
+
+    if (task.interaction?.kind === "tap-each") {
+      card.append(this.renderCountingTask(task, session));
       return card;
     }
 
@@ -788,6 +817,103 @@ export class PlayView {
     card.append(choices, feedback);
     if (task.select === "multiple") card.append(checkAnswer);
     return card;
+  }
+
+  renderCountingTask(task, session) {
+    const c = this.copy;
+    const interaction = task.interaction;
+    const total = interaction.count;
+    const state = session.counting ??= {
+      tappedObjectIndexes: [],
+      revisitTaps: 0,
+      answers: [],
+      questionStartedAt: null,
+      responseMs: null,
+    };
+    const tapped = new Set(state.tappedObjectIndexes);
+    const allMoved = tapped.size === total;
+    if (allMoved && state.questionStartedAt === null) state.questionStartedAt = Date.now();
+
+    const stage = node("section", "counting-stage");
+    stage.append(node("h4", "preschool-question", allMoved ? this.missionPrompt(task) : interaction.instruction[this.lang]));
+    const board = node("div", "counting-board");
+    const source = node("div", "counting-source");
+    source.setAttribute("role", "group");
+    source.setAttribute("aria-label", c.countingObjects);
+    const destination = interaction.destination[this.lang];
+    let objectIndex = 0;
+
+    for (const [groupIndex, groupCount] of interaction.groups.entries()) {
+      const group = node("div", "counting-source-group");
+      for (let index = 0; index < groupCount; index += 1) {
+        const currentIndex = objectIndex++;
+        if (tapped.has(currentIndex)) {
+          const placeholder = node("span", "counting-object-placeholder");
+          placeholder.setAttribute("aria-hidden", "true");
+          group.append(placeholder);
+          continue;
+        }
+        const object = button(interaction.objectIcon, () => {
+          state.tappedObjectIndexes.push(currentIndex);
+          this.render();
+        }, "counting-object counting-object-source-item");
+        object.setAttribute("aria-label", `${c.moveObject} ${interaction.objectLabel[this.lang]} ${currentIndex + 1} ${this.lang === "ro" ? "în" : "to"} ${destination}`);
+        group.append(object);
+      }
+      source.append(group);
+      if (groupIndex < interaction.groups.length - 1) source.append(node("span", "counting-group-plus", "+"));
+    }
+    board.append(source, node("span", "counting-drive-arrow", "➜"));
+
+    const destinationArea = node("section", "counting-destination");
+    destinationArea.setAttribute("aria-label", destination);
+    destinationArea.append(node("strong", "counting-destination-title", `${interaction.destinationIcon} ${destination}`));
+    const movedItems = node("div", "counting-destination-items");
+    for (let index = 0; index < total; index += 1) {
+      if (!tapped.has(index)) continue;
+      const object = allMoved
+        ? button(interaction.objectIcon, () => {
+          state.revisitTaps += 1;
+          state.lastRevisited = index;
+          this.render();
+        }, `counting-object counting-object-destination-item${state.lastRevisited === index ? " counting-object-revisited" : ""}`)
+        : node("span", "counting-object counting-object-destination-item", interaction.objectIcon);
+      if (allMoved) object.setAttribute("aria-label", `${c.revisitObject}: ${interaction.objectLabel[this.lang]} ${index + 1}`);
+      movedItems.append(object);
+    }
+    destinationArea.append(movedItems);
+    board.append(destinationArea);
+    stage.append(board);
+
+    if (!allMoved) return stage;
+
+    stage.append(node("p", "counting-ready-note", c.allMoved));
+    const answers = node("div", "preschool-choice-grid counting-answer-grid");
+    const displayChoices = session.choiceOrders[session.completedTasks].map((index) => task.choices[index]);
+    for (const choice of displayChoices) {
+      const option = button("", () => {
+        state.answers.push(choice.value);
+        if (choice.correct) {
+          state.responseMs = Date.now() - state.questionStartedAt;
+          this.advanceMission(this.activeTopic, session, c.missionPass);
+          return;
+        }
+        session.feedback = { success: false, text: c.missionRetry };
+        this.render();
+        if (this.voiceOn) this.speak(c.missionRetry);
+      }, "preschool-choice counting-answer");
+      option.append(node("span", "preschool-choice-icon", choice.icon), node("span", "preschool-choice-label", choice.label[this.lang]));
+      option.setAttribute("aria-label", choice.label[this.lang]);
+      answers.append(option);
+    }
+    stage.append(answers);
+    if (session.feedback) {
+      const feedback = node("p", "preschool-feedback child-assessment-feedback", session.feedback.text);
+      feedback.setAttribute("role", "status");
+      feedback.setAttribute("aria-live", "polite");
+      stage.append(feedback);
+    }
+    return stage;
   }
 
   renderMissionTrail(total, completed) {

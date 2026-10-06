@@ -76,6 +76,34 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .mission-trail-marker { position: relative; z-index: 1; display: grid; place-items: center; width: 38px; height: 38px; border: 3px solid #d3dfd0; border-radius: 50%; color: #647264; background: white; font-weight: 900; }
 .mission-trail-completed .mission-trail-marker { border-color: #63a975; color: white; background: #63a975; }
 .mission-trail-current .mission-trail-marker { width: 46px; height: 46px; border-color: #d9ad35; color: #604600; background: #ffe28a; box-shadow: 0 0 0 4px #fff1be; }
+.counting-stage { display: grid; justify-items: center; gap: 12px; }
+.counting-board { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; width: 100%; }
+.counting-source { display: flex; min-height: 118px; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 2px dashed #c8d8c1; border-radius: 20px; background: #ffffffb8; }
+.counting-source-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; }
+.counting-group-plus { color: #397249; font-size: 34px; font-weight: 900; }
+.counting-drive-arrow { color: #79ad4b; font-size: 32px; font-weight: 900; }
+.counting-object, .counting-object-placeholder { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 16px; font-size: 42px; line-height: 1; }
+.counting-object { border: 2px solid #d3dfd0; border-bottom-width: 5px; background: white; cursor: pointer; transition: transform .14s ease, background-color .14s ease; }
+.counting-object:hover { transform: translateY(-3px); background: #f5ffea; }
+.counting-object:focus-visible { outline: 4px solid #215fc6; outline-offset: 3px; }
+.counting-object-placeholder { border: 2px dashed #d3dfd0; background: #edf4e8; }
+.counting-destination { display: grid; justify-items: center; gap: 10px; min-height: 118px; padding: 12px; border: 2px solid #c5d8bf; border-bottom-width: 6px; border-radius: 20px; background: repeating-linear-gradient(0deg, #f4f9ef 0 48px, #e5eedc 49px 54px); }
+.counting-destination-title { color: #397249; font-size: 15px; }
+.counting-destination-items { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; }
+.counting-object-destination-item { width: 54px; height: 52px; border-bottom-width: 3px; font-size: 34px; }
+.counting-object-revisited { animation: count-car-bounce .24s ease-out; }
+.counting-ready-note { margin: 0; color: #536650; font-size: 14px; font-weight: 750; text-align: center; }
+.counting-answer-grid { width: min(100%, 620px); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.counting-answer { min-height: 112px; }
+.counting-answer .preschool-choice-icon { font-size: clamp(54px, 8vw, 76px); }
+@keyframes count-car-bounce { 50% { transform: translateY(-8px) rotate(-5deg); } }
+@media (max-width: 680px) {
+  .counting-board { grid-template-columns: minmax(0, 1fr); }
+  .counting-drive-arrow { transform: rotate(90deg); }
+  .counting-source { min-height: 92px; padding: 8px; }
+  .counting-object, .counting-object-placeholder { width: 52px; height: 52px; font-size: 34px; }
+  .counting-object-destination-item { width: 48px; height: 46px; font-size: 29px; }
+}
 .play-path-empty { padding: 30px; text-align: center; color: #596858; }
 .play-parent-note { color: #536650; font-size: 13px; text-align: center; line-height: 1.5; }
 .assignment-topic { margin: 4px 0 0; text-align: center; font-size: clamp(22px, 3vw, 30px); }
@@ -183,5 +211,6 @@ body.kid-challenge-mode .play-finish { min-height: 68px; font-size: 19px; }
 }
 @media (prefers-reduced-motion: reduce) {
   #play-view * { transition: none; }
+  .counting-object-revisited { animation: none; }
   button.path-node:hover { transform: none; }
 }

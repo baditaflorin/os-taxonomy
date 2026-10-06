@@ -205,6 +205,8 @@ select:disabled, button:disabled { cursor: not-allowed; opacity: .48; }
 .activity-item { display: grid; grid-template-columns: auto 1fr auto; gap: 11px; align-items: center; padding: 12px 13px; text-align: left; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: rgba(255,255,255,.022); }
 .activity-item:hover { background: var(--surface-2); }
 .activity-item > i { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 10px; color: var(--accent); background: rgba(125,240,189,.08); font-style: normal; }
+.activity-item-copy { display: grid; gap: 5px; min-width: 0; }
+.activity-item .activity-observation { color: var(--muted); font-size: 10px; line-height: 1.45; }
 .activity-item.learning > i { color: #ffb454; background: rgba(255,180,84,.08); }
 .activity-item.practiced > i { color: #8ed8ff; background: rgba(142,216,255,.08); }
 .activity-item.assessed > i { color: #fff3a6; background: rgba(255,243,166,.08); }

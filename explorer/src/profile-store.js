@@ -26,6 +26,20 @@ function sanitizeAssessment(value) {
   };
 }
 
+function sanitizeObservation(value) {
+  if (!value || typeof value !== "object" || value.kind !== "counting") return undefined;
+  const objectCount = Number.isInteger(value.objectCount) ? Math.min(30, Math.max(1, value.objectCount)) : null;
+  const uniqueTaps = Number.isInteger(value.uniqueTaps) ? Math.min(objectCount ?? 0, Math.max(0, value.uniqueTaps)) : null;
+  if (objectCount === null || uniqueTaps === null) return undefined;
+  const objectKind = ["car", "apple", "object"].includes(value.objectKind) ? value.objectKind : "object";
+  const answers = Array.isArray(value.answers)
+    ? value.answers.filter((answer) => Number.isInteger(answer) && answer >= 0 && answer <= 30).slice(0, 20)
+    : [];
+  const revisitTaps = Number.isInteger(value.revisitTaps) ? Math.min(500, Math.max(0, value.revisitTaps)) : 0;
+  const responseMs = Number.isInteger(value.responseMs) ? Math.min(3_600_000, Math.max(0, value.responseMs)) : null;
+  return { kind: "counting", objectKind, objectCount, uniqueTaps, revisitTaps, answers, responseMs };
+}
+
 function sanitizeActivities(value) {
   if (!Array.isArray(value)) return [];
   return value
@@ -38,7 +52,10 @@ function sanitizeActivities(value) {
       typeof activity.at === "string",
     )
     .slice(-ACTIVITY_LIMIT)
-    .map(({ id, topicId, action, at }) => ({ id, topicId, action, at }));
+    .map(({ id, topicId, action, at, observation }) => {
+      const safeObservation = sanitizeObservation(observation);
+      return { id, topicId, action, at, ...(safeObservation ? { observation: safeObservation } : {}) };
+    });
 }
 
 export function sanitizeState(value) {
@@ -159,7 +176,7 @@ export class ProfileStore {
     return this.#commit({ ...this.#state, profiles, activeProfileId: profiles[0]?.id ?? null });
   }
 
-  setProgress(topicId, status, { evidence = [], verified = false } = {}) {
+  setProgress(topicId, status, { evidence = [], verified = false, observation } = {}) {
     if (!this.#state.activeProfileId) throw new Error("Create a child profile first.");
     if (!topicId.startsWith("mt_")) throw new Error("Invalid topic identifier.");
     if (status !== null && !PROGRESS_STATUSES.has(status)) throw new Error("Invalid progress status.");
@@ -170,6 +187,7 @@ export class ProfileStore {
 
     const timestamp = this.#now().toISOString();
     const action = verified ? "assessed" : status === "learning" ? "learning" : status === "practiced" ? "practiced" : status === "mastered" ? "mastered" : "cleared";
+    const safeObservation = sanitizeObservation(observation);
     return this.#commit({
       ...this.#state,
       profiles: this.#state.profiles.map((profile) => {
@@ -189,9 +207,30 @@ export class ProfileStore {
         }
         const activities = [
           ...profile.activities,
-          { id: makeId(), topicId, action, at: timestamp },
+          {
+            id: makeId(), topicId, action, at: timestamp,
+            ...(safeObservation ? { observation: safeObservation } : {}),
+          },
         ].slice(-ACTIVITY_LIMIT);
         return { ...profile, progress, activities, updatedAt: timestamp };
+      }),
+    });
+  }
+
+  recordPractice(topicId, observation) {
+    if (!this.#state.activeProfileId) throw new Error("Create a child profile first.");
+    if (!topicId.startsWith("mt_")) throw new Error("Invalid topic identifier.");
+    const timestamp = this.#now().toISOString();
+    const safeObservation = sanitizeObservation(observation);
+    return this.#commit({
+      ...this.#state,
+      profiles: this.#state.profiles.map((profile) => profile.id !== this.#state.activeProfileId ? profile : {
+        ...profile,
+        activities: [
+          ...profile.activities,
+          { id: makeId(), topicId, action: "practiced", at: timestamp, ...(safeObservation ? { observation: safeObservation } : {}) },
+        ].slice(-ACTIVITY_LIMIT),
+        updatedAt: timestamp,
       }),
     });
   }

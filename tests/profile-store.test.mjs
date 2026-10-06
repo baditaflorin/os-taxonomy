@@ -38,6 +38,32 @@ describe("ProfileStore", () => {
     assert.deepEqual(store.activeProfile.activities.map(({ action }) => action), ["practiced", "practiced"]);
   });
 
+  it("stores bounded, local play observations without treating them as mastery evidence", () => {
+    const storage = new MemoryStorage();
+    const store = new ProfileStore(storage, () => date);
+    store.addProfile("Ada");
+    const observation = {
+      kind: "counting",
+      objectKind: "car",
+      objectCount: 7,
+      uniqueTaps: 7,
+      revisitTaps: 2,
+      answers: [6, 7],
+      responseMs: 12500,
+    };
+    store.setProgress("mt_cars", "practiced", { observation });
+
+    const restored = new ProfileStore(storage, () => date);
+    assert.equal(restored.activeProfile.progress.mt_cars.status, "practiced");
+    assert.equal(restored.activeProfile.progress.mt_cars.assessment, undefined);
+    assert.deepEqual(restored.activeProfile.activities[0].observation, observation);
+
+    restored.setProgress("mt_cars", "mastered");
+    restored.recordPractice("mt_cars", observation);
+    assert.equal(restored.activeProfile.progress.mt_cars.status, "mastered", "replaying does not downgrade known progress");
+    assert.deepEqual(restored.activeProfile.activities.at(-1).observation, observation);
+  });
+
   it("records verified assessment evidence with mastery", () => {
     const store = new ProfileStore(new MemoryStorage(), () => date);
     store.addProfile("Ada");
@@ -112,5 +138,24 @@ describe("sanitizeState", () => {
     assert.equal(state.profiles[0].name, "Ada");
     assert.deepEqual(Object.keys(state.profiles[0].progress), ["mt_ok"]);
     assert.deepEqual(state.profiles[0].activities, []);
+  });
+
+  it("sanitizes stored play observations to bounded numeric facts", () => {
+    const state = sanitizeState({
+      activeProfileId: "p1",
+      profiles: [{
+        id: "p1",
+        name: "Ada",
+        activities: [{
+          id: "a1", topicId: "mt_count", action: "practiced", at: date.toISOString(),
+          observation: { kind: "counting", objectKind: "private text", objectCount: 7, uniqueTaps: 99, revisitTaps: 800, answers: [6, "secret", 7], responseMs: 5000000 },
+        }],
+      }],
+    });
+
+    assert.deepEqual(state.profiles[0].activities[0].observation, {
+      kind: "counting", objectKind: "object", objectCount: 7, uniqueTaps: 7,
+      revisitTaps: 500, answers: [6, 7], responseMs: 3600000,
+    });
   });
 });

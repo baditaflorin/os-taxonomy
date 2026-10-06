@@ -1,7 +1,7 @@
 import { GraphView, SUBJECT_COLORS } from "./graph-view.js";
 import { filterLogbookTopics, getProgressStats, getRecommendedTopics, getSubjectJourneys } from "./logbook.js";
 import { ProfileStore } from "./profile-store.js";
-import { PlayView } from "./play-view.js?v=assignment-path-11";
+import { PlayView } from "./play-view.js?v=assignment-path-12";
 import { assessmentPromptFor, loadTaxonomy } from "./taxonomy.js";
 
 const elements = Object.fromEntries(
@@ -393,7 +393,7 @@ function renderLogbook() {
   ledger.section.append(rows, loadMore);
   content.append(ledger.section);
 
-  const recent = logbookSection("Recent moments", `A private activity trail for ${profile.name}, stored only in this browser.`);
+  const recent = logbookSection("Recent moments", `A private activity trail for ${profile.name}, stored only in this browser. Counting games show taps and answer timing; spoken words are not recorded, so listen while they play.`);
   const timeline = makeElement("div", { className: "activity-timeline" });
   const recentActivities = [...profile.activities].reverse().slice(0, 12);
   if (!recentActivities.length) {
@@ -411,13 +411,31 @@ function renderLogbook() {
       if (!topic) continue;
       const [icon, verb] = labels[activity.action];
       const item = makeElement("button", { className: `activity-item ${activity.action}`, attrs: { type: "button" } });
-      item.append(makeElement("i", { text: icon }), makeElement("span", { text: `${profile.name} ${verb} “${topic.name}”` }), makeElement("time", { text: new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(activity.at)), attrs: { datetime: activity.at } }));
+      const summary = makeElement("span", { className: "activity-item-copy" });
+      summary.append(makeElement("span", { text: `${profile.name} ${verb} “${topic.name}”` }));
+      const observation = describePlayObservation(activity.observation);
+      if (observation) summary.append(makeElement("small", { className: "activity-observation", text: observation }));
+      item.append(makeElement("i", { text: icon }), summary, makeElement("time", { text: new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(activity.at)), attrs: { datetime: activity.at } }));
       item.addEventListener("click", () => openFromLogbook(topic.id));
       timeline.append(item);
     }
   }
   recent.section.append(timeline);
   content.append(recent.section);
+}
+
+function describePlayObservation(observation) {
+  if (observation?.kind !== "counting") return "";
+  const units = { car: "cars", apple: "apples", object: "objects" }[observation.objectKind] ?? "objects";
+  const parts = [`Tapped ${observation.uniqueTaps}/${observation.objectCount} ${units} one by one.`];
+  parts.push(observation.revisitTaps
+    ? `Revisited ${units} ${observation.revisitTaps} time${observation.revisitTaps === 1 ? "" : "s"} while answering.`
+    : `No ${units} were tapped again while answering.`);
+  if (observation.answers.length) {
+    parts.push(`Answers: ${observation.answers.join(" → ")}.`);
+  }
+  if (observation.responseMs !== null) parts.push(`Time until correct choice: ${(observation.responseMs / 1000).toFixed(1)}s.`);
+  return parts.join(" ");
 }
 
 function applyFilters() {
@@ -664,10 +682,11 @@ async function initialize() {
         store.setProgress(topicId, "mastered", { verified: true, evidence });
         showToast(`Assignment complete — great work, ${store.activeProfile?.name}! New challenges are unlocked.`);
       },
-      onPractice(topicId) {
+      onPractice(topicId, observation) {
         const currentStatus = store.activeProfile?.progress?.[topicId]?.status;
         if (!store.activeProfile) return;
-        if (currentStatus !== "mastered") store.setProgress(topicId, "practiced");
+        if (currentStatus === "mastered") store.recordPractice(topicId, observation);
+        else store.setProgress(topicId, "practiced", { observation });
         showToast("Practice complete — the next challenge is open!");
       },
       onNeedProfile() { openProfileDialog("add"); },

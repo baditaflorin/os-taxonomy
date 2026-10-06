@@ -72,6 +72,24 @@ test('curated picture games are first-class Play missions without claiming full-
   }
 });
 
+test('counting games make every object tappable and keep answer choices visually equivalent', () => {
+  const countingIds = ['mt_WcfaSfVT33', 'mt_dmNvjroCPT', 'mt_OvyoRo47K-'];
+  for (const id of countingIds) {
+    const topic = topics.find((candidate) => candidate.id === id);
+    const assessment = childAssessmentFor(topic);
+    const task = assessment.tasks[0];
+    const { interaction } = task;
+
+    assert.equal(assessment.kind, 'practice-game', topic.name);
+    assert.equal(interaction.kind, 'tap-each', topic.name);
+    assert.equal(interaction.groups.reduce((sum, count) => sum + count, 0), interaction.count, topic.name);
+    assert.ok(interaction.instruction.en && interaction.instruction.ro, topic.name);
+    assert.ok(task.choices.every(({ icon }) => /^\d+$/.test(icon)), `${topic.name} uses number-only answer visuals`);
+    assert.ok(task.choices.every(({ value, label }) => Number(label.en.match(/^\d+/)?.[0]) === value), topic.name);
+    assert.equal(task.choices.find(({ correct }) => correct).value, interaction.count, topic.name);
+  }
+});
+
 test('topics with no rubric get a single self-guided mission without fabricated evidence or repeated child names', () => {
   const topic = topics.find((candidate) => candidate.evidence.length === 0 && !preschoolActivityFor(candidate));
   assert.ok(topic);
