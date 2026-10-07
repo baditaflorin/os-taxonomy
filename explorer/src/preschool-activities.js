@@ -26,6 +26,7 @@ const ACTIVITIES = {
   mt_WcfaSfVT33: {
     icon: "🍎",
     prompt: { en: "How many apples are there?", ro: "Câte mere sunt?", mix: "Câte apples sunt?" },
+    vocabulary: [{ en: "apple", ro: "măr" }, { en: "count", ro: "a număra" }],
     interaction: {
       kind: "tap-each",
       objectIcon: "🍎",
@@ -45,6 +46,7 @@ const ACTIVITIES = {
   mt_dmNvjroCPT: {
     icon: "🚗",
     prompt: { en: "How many toy cars are there?", ro: "Câte mașinuțe sunt?", mix: "Câte toy cars sunt?" },
+    vocabulary: [{ en: "car", ro: "mașinuță" }, { en: "garage", ro: "garaj" }],
     interaction: {
       kind: "tap-each",
       objectIcon: "🚗",
@@ -126,6 +128,7 @@ const ACTIVITIES = {
   "mt_OvyoRo47K-": {
     icon: "🚙",
     prompt: { en: "4 toy cars and 3 more. How many altogether?", ro: "4 mașinuțe și încă 3. Câte sunt în total?", mix: "Avem 4 toy cars și mai vin 3. How many altogether?" },
+    vocabulary: [{ en: "more", ro: "mai multe" }, { en: "altogether", ro: "în total" }],
     interaction: {
       kind: "tap-each",
       objectIcon: "🚗",
@@ -159,6 +162,31 @@ const ACTIVITIES = {
       { icon: "5️⃣", label: { en: "5 apples", ro: "5 mere" }, correct: true },
       { icon: "6️⃣", label: { en: "6", ro: "6" } },
     ],
+  },
+  mt_muxjw0fxxN: {
+    icon: "🐾",
+    prompt: { en: "Sort the animals into wild, farm, and pet homes.", ro: "Pune animalele la sălbatice, fermă și animale de companie.", mix: "Pune animals la wild, farm și pet." },
+    vocabulary: [{ en: "wild", ro: "sălbatic" }, { en: "farm", ro: "fermă" }, { en: "pet", ro: "animal de companie" }],
+    interaction: {
+      kind: "tap-sort",
+      instruction: { en: "Tap an animal, then tap its home.", ro: "Atinge un animal, apoi locul lui.", mix: "Atinge un animal, then tap its home." },
+      bins: [
+        { id: "wild", icon: "🌳", label: { en: "Wild", ro: "Sălbatice", mix: "wild" } },
+        { id: "farm", icon: "🚜", label: { en: "Farm", ro: "Fermă", mix: "farm" } },
+        { id: "pet", icon: "🏠", label: { en: "Pets", ro: "Animale de companie", mix: "pets" } },
+      ],
+      items: [
+        { icon: "🦁", label: { en: "Lion", ro: "Leu", mix: "lion" }, bin: "wild" },
+        { icon: "🦊", label: { en: "Fox", ro: "Vulpe", mix: "fox" }, bin: "wild" },
+        { icon: "🐘", label: { en: "Elephant", ro: "Elefant", mix: "elephant" }, bin: "wild" },
+        { icon: "🐄", label: { en: "Cow", ro: "Vacă", mix: "cow" }, bin: "farm" },
+        { icon: "🐔", label: { en: "Chicken", ro: "Găină", mix: "chicken" }, bin: "farm" },
+        { icon: "🐷", label: { en: "Pig", ro: "Porc", mix: "pig" }, bin: "farm" },
+        { icon: "🐕", label: { en: "Dog", ro: "Câine", mix: "dog" }, bin: "pet" },
+        { icon: "🐈", label: { en: "Cat", ro: "Pisică", mix: "cat" }, bin: "pet" },
+        { icon: "🐹", label: { en: "Hamster", ro: "Hamster", mix: "hamster" }, bin: "pet" },
+      ],
+    },
   },
 };
 

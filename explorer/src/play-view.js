@@ -1,6 +1,6 @@
 import { assessmentPromptFor } from "./taxonomy.js";
-import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-13";
-import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-13";
+import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-16";
+import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-16";
 
 const PRESCHOOL_MIN_AGE = 3;
 
@@ -16,7 +16,9 @@ const COPY = {
     stepComplete: "done", stepCurrent: "now", stepUpcoming: "up next",
     countingObjects: "Objects to count", allMoved: "All moved! You can tap one again if you want to count them again.",
     moveObject: "Tap to move", revisitObject: "Tap to look at this one again",
-    countingGameHint: "Move each one, then answer. You can tap them again if you want another look.",
+    countingGameHint: "Tap every object to move it, count as you go, then answer. You can look again.",
+    sortGameHint: "Tap an animal, then tap the place it belongs.", sortProgress: "Animals in a home: {done} of {total}", sortRetry: "Think about where this animal lives, then try a home again.",
+    vocabularyTitle: "New words",
     missionCompleteHint: "Mission complete! Your next adventure is ready.",
     ready: "Choose a game", locked: "Coming up", done: "Done for now", practiced: "Practised", more: "More games",
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
@@ -47,7 +49,9 @@ const COPY = {
     stepComplete: "terminat", stepCurrent: "acum", stepUpcoming: "urmează",
     countingObjects: "Obiecte de numărat", allMoved: "Toate au fost mutate! Poți atinge un obiect dacă vrei să le numeri din nou.",
     moveObject: "Atinge ca să muți", revisitObject: "Atinge ca s-o privești din nou",
-    countingGameHint: "Mută-le pe rând, apoi răspunde. Le poți atinge din nou dacă vrei să le mai privești.",
+    countingGameHint: "Atinge fiecare obiect ca să-l muți, numără-le, apoi răspunde. Te poți uita din nou.",
+    sortGameHint: "Atinge un animal, apoi locul lui.", sortProgress: "Animale așezate: {done} din {total}", sortRetry: "Gândește-te unde trăiește animalul și mai încearcă un loc.",
+    vocabularyTitle: "Cuvinte noi",
     missionCompleteHint: "Misiune terminată! Următoarea aventură te așteaptă.",
     ready: "Alege un joc", locked: "Urmează", done: "Gata pentru acum", practiced: "Am exersat", more: "Mai multe jocuri",
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
@@ -85,7 +89,9 @@ const MIX_COPY = {
   stepComplete: "gata", stepCurrent: "acum", stepUpcoming: "urmează",
   countingObjects: "Obiecte de numărat / Things to count", allMoved: "Le-ai mutat pe toate! Tap again dacă vrei să le numeri.",
   moveObject: "Atinge / Tap", revisitObject: "Atinge ca să privești din nou / Tap to look again",
-  countingGameHint: "Mută fiecare obiect, then answer. Poți să-l atingi din nou dacă vrei another look.",
+  countingGameHint: "Atinge fiecare obiect ca să-l muți, count as you go, apoi răspunde. Te poți uita din nou.",
+  sortGameHint: "Atinge un animal, then tap the place it belongs.", sortProgress: "Animals așezate: {done} din {total}", sortRetry: "Gândește-te unde trăiește animalul și try a home again.",
+  vocabularyTitle: "Cuvinte noi / New words",
   missionCompleteHint: "Misiune terminată! Your next adventure te așteaptă.",
   ready: "Alege un game", locked: "Urmează / Coming up", done: "Gata pentru acum / Done", practiced: "Am exersat / Practised", more: "Mai multe games",
   play: "Joacă această provocare / Play this challenge", back: "Înapoi la drum / Back to my path",
@@ -175,6 +181,15 @@ export function missionTextForLanguage(prompt, language) {
   return playText(prompt, language);
 }
 
+export function spokenTaskText(task, language, { includeInstruction = true, includeChoices = true } = {}) {
+  const instruction = includeInstruction ? playText(task?.interaction?.instruction, language) : "";
+  const prompt = missionTextForLanguage(task?.prompt, language);
+  const choices = includeChoices && Array.isArray(task?.choices)
+    ? task.choices.map(({ label }) => playText(label, language)).filter(Boolean).join(", ")
+    : "";
+  return [instruction, prompt, choices].filter(Boolean).join(" ");
+}
+
 function spokenLanguageFor(text, fallback) {
   return /[ăâîșț]|\b(?:alege|atinge|aventură|bravo|câte|fiecare|hai|încearcă|încercăm|le-ai|mai|mută|numără|poți|să|sunt|toate|următoarea|vrei)\b/i.test(text)
     ? "ro-RO"
@@ -204,18 +219,36 @@ function pathComplete(progress, topicId) {
   return status === "mastered" || status === "practiced";
 }
 
+function shuffleIndexes(length, random = Math.random) {
+  const indexes = Array.from({ length }, (_, index) => index);
+  for (let index = indexes.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]];
+  }
+  return indexes;
+}
+
+export function replayCountingLayout(groups, random = Math.random) {
+  let nextIndex = 0;
+  return groups.map((count) => {
+    const indexes = shuffleIndexes(count, random).map((index) => nextIndex + index);
+    nextIndex += count;
+    const possibleColumns = count <= 1 ? [1] : count === 2 ? [1, 2] : count === 3 ? [2, 3] : [2, 3, 4];
+    const columns = possibleColumns[Math.floor(random() * possibleColumns.length)];
+    return { indexes, columns };
+  });
+}
+
 function newAssessmentSession(assessment) {
   const choiceOrders = {};
+  const countingLayouts = {};
+  const sortOrders = {};
   for (const [taskIndex, task] of assessment.tasks.entries()) {
-    if (!Array.isArray(task.choices)) continue;
-    const order = task.choices.map((_, index) => index);
-    for (let index = order.length - 1; index > 0; index -= 1) {
-      const swapIndex = Math.floor(Math.random() * (index + 1));
-      [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
-    }
-    choiceOrders[taskIndex] = order;
+    if (Array.isArray(task.choices)) choiceOrders[taskIndex] = shuffleIndexes(task.choices.length);
+    if (task.interaction?.kind === "tap-each") countingLayouts[taskIndex] = replayCountingLayout(task.interaction.groups);
+    if (task.interaction?.kind === "tap-sort") sortOrders[taskIndex] = shuffleIndexes(task.interaction.items.length);
   }
-  return { completedTasks: 0, selectedChoices: [], selectedMode: null, feedback: null, choiceOrders };
+  return { completedTasks: 0, selectedChoices: [], selectedMode: null, feedback: null, choiceOrders, countingLayouts, sortOrders };
 }
 
 function latestCompletedPrerequisiteAt(taxonomy, progress, topicId) {
@@ -293,6 +326,7 @@ export function getPlayChapters(taxonomy, progress, age, subject) {
 
 function retryHintFor(task, copy) {
   if (task.interaction?.kind === "tap-each") return copy.retryCount;
+  if (task.interaction?.kind === "tap-sort") return copy.sortRetry;
   return task.select === "multiple" ? copy.retryMultiple : copy.retrySingle;
 }
 
@@ -499,9 +533,10 @@ export class PlayView {
     const session = this.assessmentSessions.get(topic.id);
     const task = assessment.tasks[session?.completedTasks ?? 0];
     if (task) {
-      const choices = Array.isArray(task.choices) ? task.choices.map(({ label }) => playText(label, this.lang)).join(", ") : "";
+      const countIsReady = task.interaction?.kind === "tap-each" &&
+        session?.counting?.tappedObjectIndexes?.length === task.interaction.count;
       return {
-        text: [this.missionPrompt(task), choices].filter(Boolean).join(" "),
+        text: spokenTaskText(task, this.lang, { includeInstruction: !countIsReady, includeChoices: countIsReady || task.interaction?.kind !== "tap-each" }),
         language: this.lang === "mix" ? "ro-RO" : task.language ?? (task.prompt?.[this.lang] ? (this.lang === "ro" ? "ro-RO" : "en-US") : "en-US"),
       };
     }
@@ -867,6 +902,7 @@ export class PlayView {
 
     const session = this.assessmentSessions.get(topic.id);
     const countingTask = assessment.tasks.find(({ interaction }) => interaction?.kind === "tap-each");
+    const sortTask = assessment.tasks.find(({ interaction }) => interaction?.kind === "tap-sort");
     const observation = countingTask && session?.counting ? {
       kind: "counting",
       objectKind: countingTask.interaction.objectLabel?.en ?? "object",
@@ -875,6 +911,11 @@ export class PlayView {
       revisitTaps: session.counting.revisitTaps,
       answers: session.counting.answers,
       responseMs: session.counting.responseMs,
+    } : sortTask && session?.sorting ? {
+      kind: "sorting",
+      itemCount: sortTask.interaction.items.length,
+      sortedCount: Object.keys(session.sorting.assignments).length,
+      incorrectAttempts: session.sorting.incorrectAttempts,
     } : undefined;
 
     this.assessmentSessions.delete(topic.id);
@@ -916,13 +957,15 @@ export class PlayView {
     const header = node("div", "preschool-challenge-hero");
     header.append(node("span", "preschool-challenge-icon", assessment.icon ?? preschoolIconFor(topic)));
     const intro = node("div", "preschool-challenge-copy");
+    const challengeHint = !task ? c.missionCompleteHint
+      : task.interaction?.kind === "tap-each" ? c.countingGameHint
+        : task.interaction?.kind === "tap-sort" ? c.sortGameHint
+          : assessment.kind === "guided" ? c.guidedHint
+            : assessment.kind === "practice-game" ? c.practiceGameHint
+              : c.assessmentHint;
     intro.append(
       node("p", "play-eyebrow", c.childChallenge),
-      node("p", "preschool-hint", !task
-        ? c.missionCompleteHint
-        : task.interaction?.kind === "tap-each"
-          ? c.countingGameHint
-          : assessment.kind === "guided" ? c.guidedHint : assessment.kind === "practice-game" ? c.practiceGameHint : c.assessmentHint),
+      node("p", "preschool-hint", challengeHint),
     );
     header.append(intro);
     card.append(header);
@@ -948,9 +991,16 @@ export class PlayView {
     const taskNumber = completed + 1;
     card.append(node("p", "child-assessment-progress", `${c.mission} ${taskNumber} / ${assessment.tasks.length} · ⭐ ${completed} / ${assessment.tasks.length}`));
     card.append(node("h4", "preschool-question", this.missionPrompt(task)));
+    const vocabulary = this.renderVocabulary(task);
+    if (vocabulary) card.append(vocabulary);
     if (this.lang === "ro" && task.language === "en-US") card.append(node("p", "assignment-language-note", c.sourceEnglish));
-    if (session.feedback) {
+    if (session.feedback && task.interaction?.kind !== "tap-sort") {
       card.append(feedbackCard(session.feedback, c));
+    }
+
+    if (task.interaction?.kind === "tap-sort") {
+      card.append(this.renderTapSortTask(task, session));
+      return card;
     }
 
     if (assessment.kind === "guided") {
@@ -1032,6 +1082,104 @@ export class PlayView {
     return card;
   }
 
+  renderVocabulary(task) {
+    if (this.lang !== "mix" || !Array.isArray(task.vocabulary) || !task.vocabulary.length) return null;
+    const lesson = node("section", "play-vocabulary");
+    lesson.setAttribute("aria-label", this.copy.vocabularyTitle);
+    lesson.append(node("strong", "play-vocabulary-title", this.copy.vocabularyTitle));
+    const words = node("div", "play-vocabulary-words");
+    for (const word of task.vocabulary) {
+      if (!word?.en || !word?.ro) continue;
+      const item = node("div", "play-vocabulary-word");
+      item.append(
+        button(`🔊 ${word.en}`, () => this.speak(word.en, "en-US"), "play-vocabulary-audio"),
+        node("span", "play-vocabulary-translation", `= ${word.ro}`),
+      );
+      words.append(item);
+    }
+    if (!words.childElementCount) return null;
+    lesson.append(words);
+    return lesson;
+  }
+
+  renderTapSortTask(task, session) {
+    const c = this.copy;
+    const interaction = task.interaction;
+    const state = session.sorting ??= { assignments: {}, selectedItem: null, incorrectAttempts: 0 };
+    const done = Object.keys(state.assignments).length;
+    const stage = node("section", "tap-sort-stage");
+    stage.append(
+      node("p", "tap-sort-instruction", playText(interaction.instruction, this.lang)),
+      node("p", "child-assessment-progress", c.sortProgress.replace("{done}", String(done)).replace("{total}", String(interaction.items.length))),
+    );
+    if (session.feedback) stage.append(feedbackCard(session.feedback, c));
+
+    const animals = node("div", "tap-sort-items");
+    animals.setAttribute("role", "group");
+    animals.setAttribute("aria-label", this.missionPrompt(task));
+    const itemOrder = session.sortOrders[session.completedTasks] ?? interaction.items.map((_, index) => index);
+    for (const itemIndex of itemOrder) {
+      const animal = interaction.items[itemIndex];
+      const assigned = state.assignments[itemIndex] !== undefined;
+      const label = playText(animal.label, this.lang);
+      const option = button("", () => {
+        state.selectedItem = itemIndex;
+        session.feedback = null;
+        if (this.voiceOn) this.speak(label, this.lang === "en" ? "en-US" : "ro-RO");
+        this.render();
+      }, `tap-sort-item${assigned ? " tap-sort-item-done" : ""}`);
+      option.disabled = assigned;
+      option.setAttribute("aria-pressed", String(state.selectedItem === itemIndex));
+      option.setAttribute("aria-label", `${label}${assigned ? `, ${playText(interaction.bins.find(({ id }) => id === state.assignments[itemIndex])?.label, this.lang)}` : ""}`);
+      option.append(node("span", "tap-sort-item-icon", animal.icon), node("span", "tap-sort-item-label", label));
+      option.classList.toggle("tap-sort-item-selected", state.selectedItem === itemIndex);
+      animals.append(option);
+    }
+    stage.append(animals);
+
+    const bins = node("div", "tap-sort-bins");
+    for (const bin of interaction.bins) {
+      const home = node("section", "tap-sort-bin");
+      const chooseHome = button("", () => {
+        if (state.selectedItem === null) return;
+        const animal = interaction.items[state.selectedItem];
+        if (animal.bin !== bin.id) {
+          state.incorrectAttempts += 1;
+          session.feedback = { success: false, text: c.missionRetry, hint: retryHintFor(task, c) };
+          this.render();
+          if (this.voiceOn) this.speak(c.missionRetry);
+          return;
+        }
+        state.assignments[state.selectedItem] = bin.id;
+        state.selectedItem = null;
+        session.feedback = null;
+        if (done + 1 === interaction.items.length) {
+          this.advanceMission(this.activeTopic, session, c.missionPass);
+          return;
+        }
+        this.render();
+      }, "tap-sort-bin-choice");
+      chooseHome.disabled = state.selectedItem === null;
+      chooseHome.classList.toggle("tap-sort-bin-active", state.selectedItem !== null);
+      chooseHome.setAttribute("aria-label", playText(bin.label, this.lang));
+      chooseHome.append(node("span", "tap-sort-bin-icon", bin.icon), node("span", "tap-sort-bin-label", playText(bin.label, this.lang)));
+      home.append(chooseHome);
+
+      const tray = node("div", "tap-sort-bin-items");
+      tray.setAttribute("aria-label", playText(bin.label, this.lang));
+      for (const [itemIndex, animal] of interaction.items.entries()) {
+        if (state.assignments[itemIndex] !== bin.id) continue;
+        const placed = node("span", "tap-sort-placed-item", animal.icon);
+        placed.setAttribute("aria-label", playText(animal.label, this.lang));
+        tray.append(placed);
+      }
+      home.append(tray);
+      bins.append(home);
+    }
+    stage.append(bins);
+    return stage;
+  }
+
   renderCountingTask(task, session) {
     const c = this.copy;
     const interaction = task.interaction;
@@ -1042,6 +1190,7 @@ export class PlayView {
       answers: [],
       questionStartedAt: null,
       responseMs: null,
+      layout: session.countingLayouts[session.completedTasks],
     };
     const tapped = new Set(state.tappedObjectIndexes);
     const allMoved = tapped.size === total;
@@ -1049,17 +1198,18 @@ export class PlayView {
 
     const stage = node("section", "counting-stage");
     stage.append(node("h4", "preschool-question", allMoved ? this.missionPrompt(task) : playText(interaction.instruction, this.lang)));
+    const vocabulary = this.renderVocabulary(task);
+    if (vocabulary) stage.append(vocabulary);
     const board = node("div", "counting-board");
     const source = node("div", "counting-source");
     source.setAttribute("role", "group");
     source.setAttribute("aria-label", c.countingObjects);
     const destination = playText(interaction.destination, this.lang);
-    let objectIndex = 0;
-
-    for (const [groupIndex, groupCount] of interaction.groups.entries()) {
+    const layout = state.layout ?? replayCountingLayout(interaction.groups);
+    for (const [groupIndex, groupLayout] of layout.entries()) {
       const group = node("div", "counting-source-group");
-      for (let index = 0; index < groupCount; index += 1) {
-        const currentIndex = objectIndex++;
+      group.style.setProperty("--count-columns", String(groupLayout.columns));
+      for (const currentIndex of groupLayout.indexes) {
         if (tapped.has(currentIndex)) {
           const placeholder = node("span", "counting-object-placeholder");
           placeholder.setAttribute("aria-hidden", "true");

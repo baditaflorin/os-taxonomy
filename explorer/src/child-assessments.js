@@ -1,7 +1,7 @@
 // Answer-bearing quizzes live outside the canonical taxonomy. Authored tasks map
 // to source evidence; generated guided missions stay practice-only, not mastery.
 import { assessmentPromptFor } from "./taxonomy.js";
-import { preschoolActivityFor } from "./preschool-activities.js?v=assignment-path-13";
+import { preschoolActivityFor } from "./preschool-activities.js?v=assignment-path-16";
 
 const ASSESSMENTS = {
   mt_SsS7GptD_o: {
@@ -9,6 +9,7 @@ const ASSESSMENTS = {
     tasks: [
       {
         evidenceIndex: 0,
+        vocabulary: [{ en: "money", ro: "bani" }],
         prompt: {
           en: "What can people use money to pay for? Choose both!",
           ro: "Ce pot plăti oamenii cu bani? Alege ambele imagini!",
@@ -24,6 +25,7 @@ const ASSESSMENTS = {
       },
       {
         evidenceIndex: 1,
+        vocabulary: [{ en: "swap", ro: "a schimba" }],
         prompt: {
           en: "Before money, how could a baker get some eggs?",
           ro: "Înainte să existe banii, cum putea brutarul să primească ouă?",
@@ -37,6 +39,7 @@ const ASSESSMENTS = {
       },
       {
         evidenceIndex: 2,
+        vocabulary: [{ en: "coins", ro: "monede" }, { en: "notes", ro: "bancnote" }],
         prompt: {
           en: "Tap at least two ways people can pay today!",
           ro: "Atinge cel puțin două feluri în care putem plăti azi!",
@@ -59,6 +62,7 @@ const ASSESSMENTS = {
     tasks: [
       {
         evidenceIndex: 0,
+        vocabulary: [{ en: "safe", ro: "în siguranță" }],
         prompt: {
           en: "Where can money stay safe? Pick two!",
           ro: "Unde putem păstra banii în siguranță? Alege două!",
@@ -75,6 +79,7 @@ const ASSESSMENTS = {
       },
       {
         evidenceIndex: 1,
+        vocabulary: [{ en: "need", ro: "nevoie" }, { en: "want", ro: "dorință" }],
         prompt: {
           en: "Why is it important not to lose your money?",
           ro: "De ce e bine să nu pierdem banii?",
@@ -88,6 +93,7 @@ const ASSESSMENTS = {
       },
       {
         evidenceIndex: 2,
+        vocabulary: [{ en: "money box", ro: "pușculiță" }],
         prompt: {
           en: "Shop is over! What should you do with the play coins?",
           ro: "Joaca de-a magazinul s-a terminat! Ce faci cu monedele?",
@@ -106,6 +112,7 @@ const ASSESSMENTS = {
     tasks: [
       {
         evidenceIndex: 0,
+        vocabulary: [{ en: "save", ro: "a economisi" }],
         prompt: {
           en: "Why might you save some coins?",
           ro: "De ce ai putea păstra niște monede?",
@@ -119,6 +126,7 @@ const ASSESSMENTS = {
       },
       {
         evidenceIndex: 1,
+        vocabulary: [{ en: "goal", ro: "scop" }],
         prompt: {
           en: "Which one is a saving goal?",
           ro: "Care este un scop pentru care poți economisi?",
@@ -132,6 +140,7 @@ const ASSESSMENTS = {
       },
       {
         evidenceIndex: 2,
+        vocabulary: [{ en: "enough", ro: "destul" }],
         prompt: {
           en: "You want a big toy. What can you do?",
           ro: "Îți dorești o jucărie mare. Ce poți face?",
@@ -211,16 +220,21 @@ export function childAssessmentFor(topic) {
   }
 
   const game = preschoolActivityFor(topic);
-  if (game?.prompt?.en && Array.isArray(game.choices) && game.choices.length >= 2 && game.choices.some(({ correct }) => correct)) {
+  const hasSelfCheckingChoices = Array.isArray(game?.choices) && game.choices.length >= 2 && game.choices.some(({ correct }) => correct);
+  const hasTapSort = game?.interaction?.kind === "tap-sort" && Array.isArray(game.interaction.bins) && game.interaction.bins.length >= 2 &&
+    Array.isArray(game.interaction.items) && game.interaction.items.length >= 2 &&
+    game.interaction.items.every((item) => item && game.interaction.bins.some((candidate) => candidate?.id === item.bin));
+  if (game?.prompt?.en && (hasSelfCheckingChoices || hasTapSort)) {
     return {
       kind: "practice-game",
       icon: game.icon,
       tasks: [{
         evidenceIndexes: [],
         prompt: game.prompt,
-        select: "single",
+        ...(hasSelfCheckingChoices ? { select: "single" } : {}),
         ...(game.interaction ? { interaction: game.interaction } : {}),
-        choices: game.choices,
+        ...(hasSelfCheckingChoices ? { choices: game.choices } : {}),
+        ...(Array.isArray(game.vocabulary) ? { vocabulary: game.vocabulary } : {}),
       }],
     };
   }

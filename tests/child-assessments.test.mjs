@@ -52,6 +52,7 @@ test('the age-five money journey has a self-checking, bilingual mission for ever
     assert.equal(assessment.tasks.length, topic.evidence.length, topic.name);
     for (const [index, task] of assessment.tasks.entries()) {
       assert.equal(task.evidenceIndex, index, `${topic.name} task ${index + 1} maps to its source criterion`);
+      assert.ok(task.vocabulary?.length && task.vocabulary.every(({ en, ro }) => en && ro), `${topic.name} has words to learn in mixed mode`);
       assert.ok(task.prompt.en && task.prompt.ro, `${topic.name} has both child languages`);
       assert.ok(task.choices.every(({ icon, label }) => icon && label?.en && label?.ro), `${topic.name} has visual bilingual options`);
       assert.ok(task.choices.some(({ correct }) => correct), `${topic.name} has a self-checkable answer`);
@@ -62,13 +63,19 @@ test('the age-five money journey has a self-checking, bilingual mission for ever
 
 test('curated picture games are first-class Play missions without claiming full-topic mastery', () => {
   const gameTopics = topics.filter((topic) => preschoolActivityFor(topic));
-  assert.equal(gameTopics.length, 15);
+  assert.equal(gameTopics.length, 16);
   for (const topic of gameTopics) {
     const assessment = childAssessmentFor(topic);
     assert.equal(assessment.kind, 'practice-game', topic.name);
     assert.equal(assessment.tasks.length, 1, topic.name);
     assert.deepEqual(assessment.tasks[0].evidenceIndexes, [], `${topic.name} game does not claim to cover the full evidence list`);
-    assert.ok(assessment.tasks[0].choices.some(({ correct }) => correct), topic.name);
+    if (assessment.tasks[0].interaction?.kind === 'tap-sort') {
+      const { bins, items } = assessment.tasks[0].interaction;
+      assert.ok(bins.length >= 2 && items.length >= 2, topic.name);
+      assert.ok(items.every(({ bin }) => bins.some((candidate) => candidate.id === bin)), topic.name);
+    } else {
+      assert.ok(assessment.tasks[0].choices.some(({ correct }) => correct), topic.name);
+    }
   }
 });
 
@@ -91,7 +98,21 @@ test('counting games make every object tappable and keep answer choices visually
     assert.ok(interaction.instruction.mix, `${topic.name} has a mixed-language play instruction`);
     assert.ok(interaction.objectLabel.mix && interaction.destination.mix, `${topic.name} has mixed-language object labels`);
     assert.ok(task.choices.every(({ label }) => label.mix), `${topic.name} has mixed-language answer labels`);
+    assert.ok(task.vocabulary?.length && task.vocabulary.every(({ en, ro }) => en && ro), `${topic.name} has mixed-language vocabulary`);
   }
+});
+
+test('the animal sort is a self-guided, age-five practice game with explicit homes', () => {
+  const topic = topics.find(({ id }) => id === 'mt_muxjw0fxxN');
+  assert.ok(topic && topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5);
+  const assessment = childAssessmentFor(topic);
+  const task = assessment.tasks[0];
+  assert.equal(assessment.kind, 'practice-game');
+  assert.equal(task.interaction.kind, 'tap-sort');
+  assert.deepEqual(task.evidenceIndexes, []);
+  assert.ok(task.interaction.instruction.en && task.interaction.instruction.ro && task.interaction.instruction.mix);
+  assert.ok(task.interaction.bins.every(({ label }) => label.en && label.ro));
+  assert.equal(task.interaction.items.length, 9);
 });
 
 test('topics with no rubric get a single self-guided mission without fabricated evidence or repeated child names', () => {

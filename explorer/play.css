@@ -78,10 +78,16 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .mission-trail-marker { position: relative; z-index: 1; display: grid; place-items: center; width: 38px; height: 38px; border: 3px solid #d3dfd0; border-radius: 50%; color: #647264; background: white; font-weight: 900; }
 .mission-trail-completed .mission-trail-marker { border-color: #63a975; color: white; background: #63a975; }
 .mission-trail-current .mission-trail-marker { width: 46px; height: 46px; border-color: #d9ad35; color: #604600; background: #ffe28a; box-shadow: 0 0 0 4px #fff1be; }
+.play-vocabulary { display: grid; gap: 8px; width: min(100%, 680px); margin: 8px auto 14px; padding: 12px 15px; border: 2px solid #d3e1ba; border-radius: 18px; background: #f8ffed; }
+.play-vocabulary-title { color: #456b35; font-size: 14px; }
+.play-vocabulary-words { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.play-vocabulary-word { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.play-vocabulary-audio { min-height: 42px; padding: 7px 11px; border: 2px solid #b7cc96; border-radius: 13px; color: #304b25; background: white; cursor: pointer; font: inherit; font-weight: 850; }
+.play-vocabulary-translation { color: #536650; font-weight: 700; }
 .counting-stage { display: grid; justify-items: center; gap: 12px; }
 .counting-board { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; width: 100%; }
-.counting-source { display: flex; min-height: 118px; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 2px dashed #c8d8c1; border-radius: 20px; background: #ffffffb8; }
-.counting-source-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; }
+.counting-source { display: flex; min-height: 118px; flex-direction: column; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 2px dashed #c8d8c1; border-radius: 20px; background: #ffffffb8; }
+.counting-source-group { display: grid; grid-template-columns: repeat(var(--count-columns, 3), max-content); justify-content: center; gap: 5px; }
 .counting-group-plus { color: #397249; font-size: 34px; font-weight: 900; }
 .counting-drive-arrow { color: #79ad4b; font-size: 32px; font-weight: 900; }
 .counting-object, .counting-object-placeholder { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 16px; font-size: 42px; line-height: 1; }
@@ -98,6 +104,25 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .counting-answer-grid { width: min(100%, 620px); grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .counting-answer { min-height: 112px; }
 .counting-answer .preschool-choice-icon { font-size: clamp(54px, 8vw, 76px); }
+.tap-sort-stage { display: grid; gap: 12px; }
+.tap-sort-instruction { margin: 0; color: #405d39; font-size: clamp(17px, 2.3vw, 21px); font-weight: 850; text-align: center; }
+.tap-sort-items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tap-sort-item { display: grid; align-content: center; justify-items: center; gap: 4px; min-width: 0; min-height: 108px; padding: 8px; border: 3px solid #d3dfd0; border-bottom-width: 6px; border-radius: 19px; color: #243f30; background: #fff; cursor: pointer; font: inherit; transition: transform .12s ease, background-color .12s ease, border-color .12s ease; }
+.tap-sort-item:hover { transform: translateY(-2px); background: #fbfff3; }
+.tap-sort-item-selected { border-color: #d9ad35; background: #fff5c8; box-shadow: 0 0 0 3px #ffedaa; }
+.tap-sort-item-done { border-color: #bbd8bc; background: #eff8ed; opacity: .68; }
+.tap-sort-item:disabled { cursor: default; }
+.tap-sort-item-icon { font-size: clamp(38px, 6vw, 52px); line-height: 1.1; }
+.tap-sort-item-label { max-width: 100%; font-size: 15px; font-weight: 800; overflow-wrap: anywhere; }
+.tap-sort-bins { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 10px; }
+.tap-sort-bin { display: grid; grid-template-rows: 1fr auto; min-width: 0; min-height: 135px; padding: 8px; border: 2px solid #d2ddc8; border-radius: 20px; background: #f5f9ee; }
+.tap-sort-bin-choice { display: grid; justify-items: center; align-content: center; gap: 3px; min-height: 90px; border: 3px solid #c8d8be; border-bottom-width: 6px; border-radius: 16px; color: #314c32; background: white; cursor: pointer; font: inherit; }
+.tap-sort-bin-choice:disabled { opacity: .72; cursor: default; }
+.tap-sort-bin-choice.tap-sort-bin-active { border-color: #80b65c; background: #f3ffe7; box-shadow: 0 0 0 3px #e1f2ca; }
+.tap-sort-bin-icon { font-size: 38px; }
+.tap-sort-bin-label { font-size: 16px; font-weight: 900; text-align: center; }
+.tap-sort-bin-items { display: flex; min-height: 34px; align-items: center; justify-content: center; flex-wrap: wrap; gap: 3px; padding-top: 5px; }
+.tap-sort-placed-item { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 12px; background: #e2efd6; font-size: 24px; }
 @keyframes count-car-bounce { 50% { transform: translateY(-8px) rotate(-5deg); } }
 @media (max-width: 680px) {
   .counting-board { grid-template-columns: minmax(0, 1fr); }
@@ -105,6 +130,9 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
   .counting-source { min-height: 92px; padding: 8px; }
   .counting-object, .counting-object-placeholder { width: 52px; height: 52px; font-size: 34px; }
   .counting-object-destination-item { width: 48px; height: 46px; font-size: 29px; }
+  .tap-sort-item { min-height: 94px; padding: 5px 3px; }
+  .tap-sort-item-label { font-size: 13px; }
+  .tap-sort-bin { min-height: 118px; }
 }
 .play-path-empty { padding: 30px; text-align: center; color: #596858; }
 .play-parent-note { color: #536650; font-size: 13px; text-align: center; line-height: 1.5; }

@@ -27,7 +27,15 @@ function sanitizeAssessment(value) {
 }
 
 function sanitizeObservation(value) {
-  if (!value || typeof value !== "object" || value.kind !== "counting") return undefined;
+  if (!value || typeof value !== "object") return undefined;
+  if (value.kind === "sorting") {
+    const itemCount = Number.isInteger(value.itemCount) ? Math.min(100, Math.max(1, value.itemCount)) : null;
+    const sortedCount = Number.isInteger(value.sortedCount) ? Math.min(itemCount ?? 0, Math.max(0, value.sortedCount)) : null;
+    if (itemCount === null || sortedCount === null) return undefined;
+    const incorrectAttempts = Number.isInteger(value.incorrectAttempts) ? Math.min(500, Math.max(0, value.incorrectAttempts)) : 0;
+    return { kind: "sorting", itemCount, sortedCount, incorrectAttempts };
+  }
+  if (value.kind !== "counting") return undefined;
   const objectCount = Number.isInteger(value.objectCount) ? Math.min(30, Math.max(1, value.objectCount)) : null;
   const uniqueTaps = Number.isInteger(value.uniqueTaps) ? Math.min(objectCount ?? 0, Math.max(0, value.uniqueTaps)) : null;
   if (objectCount === null || uniqueTaps === null) return undefined;

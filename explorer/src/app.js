@@ -1,7 +1,7 @@
 import { GraphView, SUBJECT_COLORS } from "./graph-view.js";
 import { filterLogbookTopics, getProgressStats, getRecommendedTopics, getSubjectJourneys } from "./logbook.js";
 import { ProfileStore } from "./profile-store.js";
-import { PlayView } from "./play-view.js?v=assignment-path-15";
+import { PlayView } from "./play-view.js?v=assignment-path-16";
 import { assessmentPromptFor, loadTaxonomy } from "./taxonomy.js";
 
 const elements = Object.fromEntries(
@@ -393,7 +393,7 @@ function renderLogbook() {
   ledger.section.append(rows, loadMore);
   content.append(ledger.section);
 
-  const recent = logbookSection("Recent moments", `A private activity trail for ${profile.name}, stored only in this browser. Counting games show taps and answer timing; spoken words are not recorded, so listen while they play.`);
+  const recent = logbookSection("Recent moments", `A private activity trail for ${profile.name}, stored only in this browser. Counting games show taps and answers; sorting games show how many tries found another home. Spoken words are not recorded, so listen while they play.`);
   const timeline = makeElement("div", { className: "activity-timeline" });
   const recentActivities = [...profile.activities].reverse().slice(0, 12);
   if (!recentActivities.length) {
@@ -425,6 +425,13 @@ function renderLogbook() {
 }
 
 function describePlayObservation(observation) {
+  if (observation?.kind === "sorting") {
+    const parts = [`Sorted ${observation.sortedCount}/${observation.itemCount} animals.`];
+    parts.push(observation.incorrectAttempts
+      ? `Tried a different home ${observation.incorrectAttempts} time${observation.incorrectAttempts === 1 ? "" : "s"} before sorting.`
+      : "No other home was tried.");
+    return parts.join(" ");
+  }
   if (observation?.kind !== "counting") return "";
   const units = { car: "cars", apple: "apples", object: "objects" }[observation.objectKind] ?? "objects";
   const parts = [`Tapped ${observation.uniqueTaps}/${observation.objectCount} ${units} one by one.`];

@@ -149,6 +149,9 @@ describe("sanitizeState", () => {
         activities: [{
           id: "a1", topicId: "mt_count", action: "practiced", at: date.toISOString(),
           observation: { kind: "counting", objectKind: "private text", objectCount: 7, uniqueTaps: 99, revisitTaps: 800, answers: [6, "secret", 7], responseMs: 5000000 },
+        }, {
+          id: "a2", topicId: "mt_sort", action: "practiced", at: date.toISOString(),
+          observation: { kind: "sorting", itemCount: 9, sortedCount: 9, incorrectAttempts: 2, privateText: "discard me" },
         }],
       }],
     });
@@ -156,6 +159,9 @@ describe("sanitizeState", () => {
     assert.deepEqual(state.profiles[0].activities[0].observation, {
       kind: "counting", objectKind: "object", objectCount: 7, uniqueTaps: 7,
       revisitTaps: 500, answers: [6, 7], responseMs: 3600000,
+    });
+    assert.deepEqual(state.profiles[0].activities[1].observation, {
+      kind: "sorting", itemCount: 9, sortedCount: 9, incorrectAttempts: 2,
     });
   });
 });

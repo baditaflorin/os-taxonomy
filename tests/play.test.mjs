@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { getEarnedStars, getPlayChapters, getPlayPath, missionTextForLanguage, playText } from '../explorer/src/play-view.js';
+import { getEarnedStars, getPlayChapters, getPlayPath, missionTextForLanguage, playText, replayCountingLayout, spokenTaskText } from '../explorer/src/play-view.js';
 import { buildTaxonomy } from '../explorer/src/taxonomy.js';
 
 const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
@@ -13,6 +13,30 @@ test('Play can keep English and Romanian together in one mixed-language mode', (
   assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?' }, 'mix'), 'Hai să încercăm. How many cars?');
   assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?', mix: 'Câte toy cars sunt?' }, 'mix'), 'Câte toy cars sunt?');
   assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?' }, 'ro'), 'Câte mașini?');
+});
+
+test('counting replay layouts change the visual arrangement without changing arithmetic groups', () => {
+  const first = replayCountingLayout([4, 3], () => 0);
+  const second = replayCountingLayout([4, 3], () => 0.999999);
+
+  assert.deepEqual(first.map(({ indexes }) => indexes.length), [4, 3]);
+  assert.deepEqual(second.map(({ indexes }) => indexes.length), [4, 3]);
+  assert.ok(first[0].indexes.every((index) => index >= 0 && index < 4));
+  assert.ok(first[1].indexes.every((index) => index >= 4 && index < 7));
+  assert.notDeepEqual(first, second);
+  for (const group of [...first, ...second]) {
+    assert.equal(new Set(group.indexes).size, group.indexes.length);
+    assert.ok(group.columns >= 1 && group.columns <= group.indexes.length);
+  }
+});
+
+test('spoken mission text includes the game action before the question', () => {
+  const spoken = spokenTaskText({
+    interaction: { instruction: { en: 'Tap each car and count as you go.' } },
+    prompt: { en: 'How many toy cars are there?' },
+    choices: [{ label: { en: '6 cars' } }, { label: { en: '7 cars' } }],
+  }, 'en');
+  assert.equal(spoken, 'Tap each car and count as you go. How many toy cars are there? 6 cars, 7 cars');
 });
 
 test('trail stars persist from completed topics and stay isolated by profile', () => {
