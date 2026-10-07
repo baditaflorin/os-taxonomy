@@ -11,7 +11,7 @@
 .play-button:hover:not(:disabled) { background: #e7f9b6; }
 .play-button:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 3px; }
 #play-view button:focus-visible, #play-view select:focus-visible, #play-view textarea:focus-visible { outline: 4px solid #215fc6; outline-offset: 4px; }
-.play-score { color: #5e651f; background: #fff3b5; border-radius: 30px; padding: 10px 18px; width: fit-content; font-weight: 750; }
+.play-score { color: #765313; background: linear-gradient(110deg, #fff4b6, #fffbe2); border: 2px solid #f3d66e; border-radius: 30px; padding: 10px 18px; width: fit-content; font-weight: 850; box-shadow: 0 4px 0 #e8cb73; }
 .play-instruction { font-size: clamp(22px, 3vw, 32px); text-align: center; margin: 10px 0 8px; }
 .play-path-intro { text-align: center; color: #536650; margin: 0 auto 18px; font-size: 16px; }
 .play-path-filters { justify-content: center; margin: 12px 0 20px; }
@@ -76,8 +76,8 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .mission-trail-step:not(:last-child)::after { content: ""; position: absolute; z-index: 0; top: 50%; right: calc(-50% + 18px); left: calc(50% + 18px); height: 5px; border-radius: 4px; background: #d9e1d5; transform: translateY(-50%); }
 .mission-trail-completed:not(:last-child)::after { background: #85c68c; }
 .mission-trail-marker { position: relative; z-index: 1; display: grid; place-items: center; width: 38px; height: 38px; border: 3px solid #d3dfd0; border-radius: 50%; color: #647264; background: white; font-weight: 900; }
-.mission-trail-completed .mission-trail-marker { border-color: #63a975; color: white; background: #63a975; }
-.mission-trail-current .mission-trail-marker { width: 46px; height: 46px; border-color: #d9ad35; color: #604600; background: #ffe28a; box-shadow: 0 0 0 4px #fff1be; }
+.mission-trail-completed .mission-trail-marker { border-color: #edc64d; color: #785000; background: #fff2a8; box-shadow: 0 3px 0 #dfbb52; font-size: 19px; }
+.mission-trail-current .mission-trail-marker { width: 46px; height: 46px; border-color: #d9ad35; color: #604600; background: #ffe28a; box-shadow: 0 0 0 4px #fff1be; animation: current-star-glow 2.6s ease-in-out infinite; font-size: 22px; }
 .play-vocabulary { display: grid; gap: 8px; width: min(100%, 680px); margin: 8px auto 14px; padding: 12px 15px; border: 2px solid #d3e1ba; border-radius: 18px; background: #f8ffed; }
 .play-vocabulary-title { color: #456b35; font-size: 14px; }
 .play-vocabulary-words { display: flex; flex-wrap: wrap; gap: 8px 14px; }
@@ -140,7 +140,7 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .assignment-meta { margin: 5px 0 16px; text-align: center; color: #647264; font-size: 13px; }
 .preschool-challenge { max-width: 900px; margin: 16px auto; padding: 22px; border: 3px solid white; border-radius: 30px; background: radial-gradient(circle at 92% 8%, #fff0a9 0 52px, transparent 53px), linear-gradient(135deg, #e4f6bf, #e7f4ff 62%, #fff1dc); box-shadow: 0 12px 0 #cddfc5; }
 .preschool-challenge-hero { display: flex; align-items: center; gap: 18px; }
-.preschool-challenge-icon { display: grid; flex: 0 0 88px; place-items: center; width: 88px; height: 88px; border: 3px solid white; border-radius: 28px; background: #fff; box-shadow: 0 5px 0 #d8e4cf; font-size: 52px; }
+.preschool-challenge-icon { display: grid; flex: 0 0 88px; place-items: center; width: 88px; height: 88px; border: 3px solid white; border-radius: 28px; background: #fff; box-shadow: 0 5px 0 #d8e4cf; font-size: 52px; animation: mascot-bob 3.8s ease-in-out infinite; }
 .preschool-challenge-copy { min-width: 0; }
 .preschool-hint { margin: 7px 0; color: #536650; font-size: 17px; line-height: 1.45; }
 .preschool-question { margin: 18px 0; color: #243f30; text-align: center; font-size: clamp(23px, 3.2vw, 34px); line-height: 1.25; }
@@ -161,11 +161,19 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .preschool-feedback-words strong { font-size: 16px; }
 .preschool-feedback-words > span { font-size: 15px; font-weight: 650; }
 .preschool-feedback-card-success { border-color: #b6dec6; color: #247044; background: linear-gradient(110deg, #e8f8e9, #fff); box-shadow: 0 4px 0 #d1e9d8; }
-.preschool-feedback-card-success .preschool-feedback-icon { background: #d0f0dd; }
+.preschool-feedback-card-success .preschool-feedback-icon { background: #d0f0dd; animation: reward-star-pop .55s cubic-bezier(.2,.8,.2,1) both; }
 .child-assessment-progress { margin: 14px 0 0; color: #397249; font-size: 16px; font-weight: 900; text-align: center; }
 .child-assessment-instruction { margin: -7px 0 14px; text-align: center; }
 .child-assessment-choices { margin-bottom: 14px; }
-.child-assessment-stars { display: flex; justify-content: center; gap: 13px; margin: 15px 0; font-size: 46px; }
+.child-assessment-stars { display: flex; align-items: center; justify-content: center; gap: 13px; min-height: 60px; margin: 15px 0; font-size: 46px; }
+.child-assessment-earned-star { display: inline-block; filter: drop-shadow(0 4px 0 #e4c75f); animation: sticker-star-arrive .65s cubic-bezier(.2,.8,.2,1) var(--star-delay) both; }
+.mission-star-burst { position: fixed; z-index: 100; top: 38%; left: 50%; width: 1px; height: 1px; pointer-events: none; }
+.mission-star-particle { position: absolute; opacity: 0; font-size: clamp(28px, 5vw, 42px); line-height: 1; animation: mission-star-flight 950ms cubic-bezier(.18,.72,.26,1) var(--star-delay) both; }
+@keyframes mission-star-flight { 0% { opacity: 0; transform: translate(0, 18px) scale(.25) rotate(0); } 18% { opacity: 1; transform: translate(0, 0) scale(1.18) rotate(var(--star-turn)); } 100% { opacity: 0; transform: translate(var(--star-x), var(--star-y)) scale(.65) rotate(var(--star-turn)); } }
+@keyframes reward-star-pop { 0% { transform: scale(.45) rotate(-20deg); } 70% { transform: scale(1.18) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes sticker-star-arrive { 0% { opacity: 0; transform: translateY(12px) scale(.45) rotate(-22deg); } 70% { opacity: 1; transform: translateY(-3px) scale(1.18) rotate(8deg); } 100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+@keyframes current-star-glow { 50% { box-shadow: 0 0 0 7px #fff1be, 0 0 22px #ffdb5c; transform: scale(1.04); } }
+@keyframes mascot-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-4px) rotate(2deg); } }
 .child-assessment-check { margin: 12px auto 0; }
 .child-observation-instruction { margin: 18px 0 12px; color: #405a43; font-size: 18px; font-weight: 900; text-align: center; }
 .mission-response-modes .preschool-choice { min-height: 125px; }
@@ -249,7 +257,6 @@ body.kid-challenge-mode .play-finish { min-height: 68px; font-size: 19px; }
   .kid-world-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #play-view * { transition: none; }
-  .counting-object-revisited { animation: none; }
+  #play-view * { transition: none; animation: none !important; }
   button.path-node:hover { transform: none; }
 }

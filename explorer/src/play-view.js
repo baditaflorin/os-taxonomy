@@ -1,6 +1,6 @@
 import { assessmentPromptFor } from "./taxonomy.js";
-import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-16";
-import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-16";
+import { childAssessmentFor } from "./child-assessments.js?v=assignment-path-17";
+import { preschoolActivityFor, preschoolIconFor } from "./preschool-activities.js?v=assignment-path-17";
 
 const PRESCHOOL_MIN_AGE = 3;
 
@@ -334,7 +334,7 @@ function feedbackCard(feedback, copy) {
   const card = node("div", `preschool-feedback-card${feedback.success ? " preschool-feedback-card-success" : ""}`);
   card.setAttribute("role", "status");
   card.setAttribute("aria-live", "polite");
-  card.append(node("span", "preschool-feedback-icon", feedback.success ? "✨" : "🔎"));
+  card.append(node("span", "preschool-feedback-icon", feedback.success ? "🌟" : "🔎"));
   const words = node("span", "preschool-feedback-words");
   words.append(node("strong", "", feedback.success ? feedback.text : copy.retryTitle));
   if (!feedback.success) words.append(node("span", "", feedback.hint ?? feedback.text));
@@ -361,6 +361,8 @@ export class PlayView {
     this.visible = false;
     this.voiceOn = Boolean(globalThis.speechSynthesis && globalThis.SpeechSynthesisUtterance);
     this.speechGeneration = 0;
+    this.starBurstElement = null;
+    this.starBurstTimer = null;
     try {
       const savedLanguage = globalThis.localStorage.getItem("marble-taxonomy:play-language");
       if (savedLanguage === "ro" || savedLanguage === "en" || savedLanguage === "mix") this.lang = savedLanguage;
@@ -937,10 +939,38 @@ export class PlayView {
     session.selectedMode = null;
     session.feedback = { success: true, text: successText };
     this.render();
+    this.showMissionStarReward();
     if (this.voiceOn) {
       const next = this.spokenChallengeFor(topic);
       this.speak([successText, next.text].filter(Boolean).join(" "), next.language);
     }
+  }
+
+  showMissionStarReward() {
+    if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    this.starBurstElement?.remove();
+    if (this.starBurstTimer !== null) globalThis.clearTimeout(this.starBurstTimer);
+    const burst = node("div", "mission-star-burst");
+    burst.setAttribute("aria-hidden", "true");
+    const stars = [
+      [-82, -8, "⭐"], [-55, -48, "✨"], [-24, -30, "🌟"],
+      [12, -58, "⭐"], [45, -34, "✨"], [78, -4, "🌟"], [33, 8, "⭐"],
+    ];
+    for (const [index, [x, y, icon]] of stars.entries()) {
+      const star = node("span", "mission-star-particle", icon);
+      star.style.setProperty("--star-x", `${x}px`);
+      star.style.setProperty("--star-y", `${y}px`);
+      star.style.setProperty("--star-delay", `${index * 35}ms`);
+      star.style.setProperty("--star-turn", `${index % 2 ? 24 : -24}deg`);
+      burst.append(star);
+    }
+    this.root.append(burst);
+    this.starBurstElement = burst;
+    this.starBurstTimer = globalThis.setTimeout(() => {
+      burst.remove();
+      if (this.starBurstElement === burst) this.starBurstElement = null;
+      this.starBurstTimer = null;
+    }, 1100);
   }
 
   renderChildAssessment(topic, assessment) {
@@ -976,7 +1006,14 @@ export class PlayView {
       card.append(node("p", "child-assessment-progress", `⭐ ${assessment.tasks.length} / ${assessment.tasks.length}`));
       card.append(node("h4", "preschool-question", c.missionsComplete));
       const stars = node("div", "child-assessment-stars");
-      for (const _task of assessment.tasks) stars.append(node("span", "", "⭐"));
+      stars.setAttribute("role", "img");
+      stars.setAttribute("aria-label", `${assessment.tasks.length} ${c.stars}`);
+      for (const [index] of assessment.tasks.entries()) {
+        const star = node("span", "child-assessment-earned-star", "⭐");
+        star.setAttribute("aria-hidden", "true");
+        star.style.setProperty("--star-delay", `${index * 110}ms`);
+        stars.append(star);
+      }
       card.append(stars);
       const finishLabel = assessment.kind === "choice" ? c.finishQuiz : c.finishMissions;
       card.append(button(finishLabel, () => this.finishChildAssessment(topic, assessment), "play-button play-finish"));
@@ -1286,7 +1323,9 @@ export class PlayView {
       const label = state === "completed" ? c.stepComplete : state === "current" ? c.stepCurrent : c.stepUpcoming;
       step.setAttribute("aria-label", `${c.mission} ${index + 1}: ${label}`);
       if (state === "current") step.setAttribute("aria-current", "step");
-      step.append(node("span", "mission-trail-marker", state === "completed" ? "✓" : String(index + 1)));
+      const marker = node("span", "mission-trail-marker", state === "completed" || state === "current" ? "⭐" : String(index + 1));
+      if (state !== "upcoming") marker.setAttribute("aria-hidden", "true");
+      step.append(marker);
       steps.append(step);
     }
     return steps;

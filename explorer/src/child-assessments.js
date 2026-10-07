@@ -1,7 +1,7 @@
 // Answer-bearing quizzes live outside the canonical taxonomy. Authored tasks map
 // to source evidence; generated guided missions stay practice-only, not mastery.
 import { assessmentPromptFor } from "./taxonomy.js";
-import { preschoolActivityFor } from "./preschool-activities.js?v=assignment-path-16";
+import { preschoolActivityFor } from "./preschool-activities.js?v=assignment-path-17";
 
 const ASSESSMENTS = {
   mt_SsS7GptD_o: {
