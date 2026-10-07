@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { getPlayPath, missionTextForLanguage, playText } from '../explorer/src/play-view.js';
+import { getEarnedStars, getPlayPath, missionTextForLanguage, playText } from '../explorer/src/play-view.js';
 import { buildTaxonomy } from '../explorer/src/taxonomy.js';
 
 const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
@@ -13,6 +13,17 @@ test('Play can keep English and Romanian together in one mixed-language mode', (
   assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?' }, 'mix'), 'Hai să încercăm. How many cars?');
   assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?', mix: 'Câte toy cars sunt?' }, 'mix'), 'Câte toy cars sunt?');
   assert.equal(missionTextForLanguage({ en: 'How many cars?', ro: 'Câte mașini?' }, 'ro'), 'Câte mașini?');
+});
+
+test('trail stars persist from completed topics and stay isolated by profile', () => {
+  const progress = {
+    masteredTopic: { status: 'mastered' },
+    practicedTopic: { status: 'practiced' },
+    inProgressTopic: { status: 'learning' },
+  };
+  assert.equal(getEarnedStars(progress), 2);
+  assert.equal(getEarnedStars({}), 0);
+  assert.equal(getEarnedStars({ one: { status: 'mastered' } }), 1);
 });
 
 test('Play assignments come from the taxonomy quick assessments for the selected age', () => {

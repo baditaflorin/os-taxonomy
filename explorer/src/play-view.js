@@ -31,7 +31,7 @@ const COPY = {
     tryAgeFour: "Show age-4 challenges",
     lockedBy: "First try", unlocks: "This can open", noPath: "No challenges match these choices yet. Try another age or subject.",
     success: "Adventure complete! New challenges may have opened.",
-    stars: "path stars this session", guest: "Playing as a guest. Add a child profile to save practice and open the path.", saved: "Practice stays in this browser. Grown-ups can separately mark what a child knows.",
+    star: "star on my trail", stars: "stars on my trail", guest: "Playing as a guest. Add a child profile to save practice and open the path.", saved: "Practice stays in this browser. Grown-ups can separately mark what a child knows.",
     unavailable: "Voice is unavailable in this browser. A grown-up can read the challenge aloud.",
     waiting: "Complete the first challenge to see what it opens.", completed: "Known", lockedLabel: "Locked", prerequisite: "Finish first:",
   },
@@ -61,7 +61,7 @@ const COPY = {
     tryAgeFour: "Arată provocările pentru 4 ani",
     lockedBy: "Încearcă mai întâi", unlocks: "Aceasta poate deschide", noPath: "Nu sunt provocări pentru aceste alegeri. Încearcă altă vârstă sau domeniu.",
     success: "Aventură terminată! S-ar putea să se fi deschis provocări noi.",
-    stars: "stele pe drum în sesiunea aceasta", guest: "Te joci ca oaspete. Adaugă profilul copilului ca să salvezi exersarea și să deschizi drumul.", saved: "Exersarea rămâne în acest browser. Un adult poate marca separat ce știe copilul.",
+    star: "stea în drumul meu", stars: "stele în drumul meu", guest: "Te joci ca oaspete. Adaugă profilul copilului ca să salvezi exersarea și să deschizi drumul.", saved: "Exersarea rămâne în acest browser. Un adult poate marca separat ce știe copilul.",
     unavailable: "Vocea nu este disponibilă în acest browser. Un adult îți poate citi provocarea.",
     waiting: "Termină prima provocare ca să vezi ce deschide.", completed: "Știe", lockedLabel: "Încuiat", prerequisite: "Încearcă mai întâi:",
   },
@@ -99,7 +99,7 @@ const MIX_COPY = {
   missionsComplete: "Ai terminat toate misiunile! You did it!", finishMissions: "Hai la următoarea adventure!",
   finishQuiz: "Termină aventura / Finish my adventure!", chooseAtLeast: "Alege cel puțin două imagini, then check.",
   ageThreeTitle: "Pentru micii exploratori / Little explorers", tryAgeFour: "Arată provocările pentru 4 ani / Show age-4 games",
-  success: "Aventură terminată! New challenges may have opened.", stars: "stele pe drum this session",
+  success: "Aventură terminată! New challenges may have opened.", star: "star în drumul meu", stars: "stars în drumul meu",
   guest: "Te joci ca oaspete. Add a child profile ca să salvezi exersarea și să deschizi drumul.",
   saved: "Exersarea rămâne în acest browser. An adult poate marca separat ce știe copilul.",
   unavailable: "Vocea nu este disponibilă în acest browser. Un adult îți poate citi challenge-ul.",
@@ -157,6 +157,10 @@ export function playText(value, language) {
   if (!value || typeof value !== "object") return "";
   if (language === "mix") return value.mix ?? value.ro ?? value.en ?? "";
   return value[language] ?? value.en ?? value.ro ?? "";
+}
+
+export function getEarnedStars(progress = {}) {
+  return Object.values(progress ?? {}).filter((entry) => entry?.status === "mastered" || entry?.status === "practiced").length;
 }
 
 export function missionTextForLanguage(prompt, language) {
@@ -278,7 +282,6 @@ export class PlayView {
     this.lang = globalThis.navigator?.language?.toLocaleLowerCase().startsWith("ro") ? "ro" : "en";
     this.age = 5;
     this.subject = "";
-    this.stars = 0;
     this.screen = "path";
     this.selectedTopicId = null;
     this.visible = false;
@@ -315,7 +318,6 @@ export class PlayView {
     const changed = this.profile?.id !== profile?.id || this.profile?.name !== profile?.name || this.progressKey !== progressKey;
     if (this.profile?.id && this.profile.id !== profile?.id) {
       this.assessmentSessions.clear();
-      this.stars = 0;
       this.selectedTopicId = null;
       this.screen = "path";
     }
@@ -389,7 +391,8 @@ export class PlayView {
     settings.append(language, voice);
     if (kidPlay) settings.append(button(`🧑 ${c.grownupExit}`, this.onExit));
     header.append(greeting, settings);
-    const score = node("p", "play-score", `⭐ ${this.stars} ${c.stars}`);
+    const earnedStars = getEarnedStars(this.profile?.progress);
+    const score = node("p", "play-score", `⭐ ${earnedStars} ${earnedStars === 1 ? c.star : c.stars}`);
     score.setAttribute("aria-live", "polite");
     shell.append(header, score);
     this.stage = node("div", "play-stage");
@@ -728,7 +731,6 @@ export class PlayView {
     this.assessmentSessions.delete(topic.id);
     this.screen = "path";
     this.selectedTopicId = null;
-    this.stars += 1;
     if (assessment.kind === "choice") this.onAssess(topic.id, evidence);
     else this.onPractice(topic.id, observation);
     this.onCelebrate();
