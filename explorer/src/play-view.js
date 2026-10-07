@@ -10,6 +10,7 @@ const COPY = {
     age: "I'm learning at age", subject: "Choose a subject", allSubjects: "All subjects",
     pathTitle: "Your learning path", pathIntro: "Pick a glowing challenge. Finish one to open more of the path! Practice is not a test.", kidPathIntro: "Choose a world or play your next game!",
     trailTitle: "Your adventure trail", chooseWorld: "Choose a world", worldsIntro: "Choose a world to see its trail, or play your next adventure.",
+    chooseChapter: "Choose a chapter", chaptersIntro: "Little adventures make a big learning path.", chapterLabel: "Chapter", chapterProgress: "{done} of {total} games", worldSummary: "{chapters} chapters · {done}/{total} played", worldSummaryOne: "{chapters} chapter · {done}/{total} played", allChapters: "All chapters",
     continueTrail: "Your next adventure", continueAction: "Play this game", allWorlds: "All worlds",
     worldProgress: "{done} of {total} games played", trailSteps: "Steps in this adventure",
     stepComplete: "done", stepCurrent: "now", stepUpcoming: "up next",
@@ -20,7 +21,7 @@ const COPY = {
     ready: "Choose a game", locked: "Coming up", done: "Done for now", practiced: "Practised", more: "More games",
     play: "Play this challenge", back: "Back to my path", challenge: "Your quick assignment",
     childChallenge: "A little learning mission", grownupOriginal: "Grown-up: original assignment", grownupSettings: "Grown-up settings", grownupExit: "Grown-up",
-    mission: "Mission", missionCheck: "Check my answer!", missionPass: "Nice thinking! You got this part!", missionRetry: "Not quite. Look again and try another answer.",
+    mission: "Mission", missionCheck: "Check my answer!", missionPass: "Nice thinking! You got this part!", missionRetry: "Not quite. Look again and try another answer.", retryTitle: "Try this clue", retrySingle: "Look at the question again. Which picture matches?", retryMultiple: "Look at each picture. Keep the ones that match the question.", retryCount: "Tap each one and count out loud. You can tap them again while you count.",
     assessmentHint: "Tap the picture that answers the question.", practiceGameHint: "Pick a picture. If it is not the right one yet, you can try again!", guidedHint: "Try the challenge by saying it, pointing, drawing, or using toys. No grown-up check needed.",
     chooseResponseMode: "How will you try it? Pick one!",
     responseModes: [{ id: "say", icon: "🗣️", label: "Say it" }, { id: "point", icon: "👆", label: "Point to it" }, { id: "show", icon: "🧸", label: "Show with toys" }, { id: "draw", icon: "🎨", label: "Draw it" }],
@@ -40,6 +41,7 @@ const COPY = {
     age: "Învăț la vârsta de", subject: "Alege un domeniu", allSubjects: "Toate domeniile",
     pathTitle: "Drumul tău de învățare", pathIntro: "Alege o provocare luminoasă. Termină una ca să deschizi altele! Exersarea nu este un test.", kidPathIntro: "Alege o lume sau joacă următorul joc!",
     trailTitle: "Drumul aventurilor", chooseWorld: "Alege o lume", worldsIntro: "Alege o lume ca să-i vezi drumul sau joacă următoarea aventură.",
+    chooseChapter: "Alege un capitol", chaptersIntro: "Aventurile mici fac un drum mare de învățare.", chapterLabel: "Capitolul", chapterProgress: "Ai jucat {done} din {total} jocuri", worldSummary: "{chapters} capitole · {done}/{total} jucate", worldSummaryOne: "{chapters} capitol · {done}/{total} jucate", allChapters: "Toate capitolele",
     continueTrail: "Următoarea aventură", continueAction: "Joacă jocul", allWorlds: "Toate lumile",
     worldProgress: "Ai jucat {done} din {total} jocuri", trailSteps: "Pașii acestei aventuri",
     stepComplete: "terminat", stepCurrent: "acum", stepUpcoming: "urmează",
@@ -50,7 +52,7 @@ const COPY = {
     ready: "Alege un joc", locked: "Urmează", done: "Gata pentru acum", practiced: "Am exersat", more: "Mai multe jocuri",
     play: "Joacă această provocare", back: "Înapoi la drum", challenge: "Provocarea ta rapidă",
     childChallenge: "O misiune de învățare", grownupOriginal: "Pentru adult: provocarea originală", grownupSettings: "Setări pentru adult", grownupExit: "Adult",
-    mission: "Misiunea", missionCheck: "Verifică răspunsul!", missionPass: "Bravo! Ai rezolvat această parte!", missionRetry: "Nu chiar. Uită-te din nou și mai încearcă.",
+    mission: "Misiunea", missionCheck: "Verifică răspunsul!", missionPass: "Bravo! Ai rezolvat această parte!", missionRetry: "Nu chiar. Uită-te din nou și mai încearcă.", retryTitle: "Un indiciu", retrySingle: "Privește întrebarea din nou. Care imagine se potrivește?", retryMultiple: "Privește fiecare imagine. Păstrează-le pe cele potrivite.", retryCount: "Atinge fiecare obiect și numără cu voce tare. Le poți atinge din nou în timp ce numeri.",
     assessmentHint: "Atinge imaginea care răspunde la întrebare.", practiceGameHint: "Alege o imagine. Dacă nu este cea potrivită, mai poți încerca!", guidedHint: "Încearcă provocarea: spune, arată, desenează sau folosește jucării. Nu ai nevoie de verificarea unui adult.",
     chooseResponseMode: "Cum vrei să încerci? Alege una!",
     responseModes: [{ id: "say", icon: "🗣️", label: "Spune" }, { id: "point", icon: "👆", label: "Arată cu degetul" }, { id: "show", icon: "🧸", label: "Arată cu jucării" }, { id: "draw", icon: "🎨", label: "Desenează" }],
@@ -76,6 +78,7 @@ const MIX_COPY = {
   pathIntro: "Alege o provocare luminoasă. Finish one ca să deschizi mai multe! Exersarea nu este un test.",
   kidPathIntro: "Alege o lume sau play your next game!",
   trailTitle: "Drumul aventurilor / Your adventure trail", chooseWorld: "Alege un world",
+  chooseChapter: "Alege un capitol / Choose a chapter", chaptersIntro: "Aventurile mici fac un drum mare / Little adventures make a big learning path.", chapterLabel: "Capitolul / Chapter", chapterProgress: "Ai jucat {done} din {total} games", worldSummary: "{chapters} chapters · {done}/{total} jucate", worldSummaryOne: "{chapters} chapter · {done}/{total} jucate", allChapters: "Toate capitolele / All chapters",
   worldsIntro: "Alege un world ca să-i vezi trail-ul sau joacă următoarea adventure.",
   continueTrail: "Next adventure", continueAction: "Joacă acest game", allWorlds: "Toate lumile / All worlds",
   worldProgress: "Ai jucat {done} din {total} games", trailSteps: "Pașii acestei aventuri",
@@ -89,7 +92,7 @@ const MIX_COPY = {
   challenge: "Provocarea ta rapidă / Your quick challenge", childChallenge: "O mică learning mission",
   grownupOriginal: "Pentru adult: original assignment", grownupSettings: "Setări pentru adult", grownupExit: "Adult",
   mission: "Misiunea / Mission", missionCheck: "Verifică răspunsul / Check my answer!",
-  missionPass: "Bravo! Nice thinking!", missionRetry: "Nu chiar. Look again și mai încearcă.",
+  missionPass: "Bravo! Nice thinking!", missionRetry: "Nu chiar. Look again și mai încearcă.", retryTitle: "Un indiciu / A little clue", retrySingle: "Privește întrebarea din nou. Which picture matches?", retryMultiple: "Privește fiecare imagine. Keep the ones that match.", retryCount: "Atinge fiecare obiect și count out loud. Poți să le atingi din nou while you count.",
   assessmentHint: "Atinge imaginea care răspunde la întrebare / Tap the picture that answers.",
   practiceGameHint: "Alege o imagine. Pick one! Dacă nu este cea potrivită, mai încearcă.",
   guidedHint: "Încearcă: spune, arată, desenează sau folosește jucării. Try it your way!",
@@ -223,9 +226,9 @@ function latestCompletedPrerequisiteAt(taxonomy, progress, topicId) {
   }, 0);
 }
 
-export function getPlayPath(taxonomy, progress, age, subject = "") {
+export function getPlayPath(taxonomy, progress, age, subject = "", domain = "") {
   const inScope = taxonomy.topics.filter((topic) =>
-    topic.ageRangeStart <= age && topic.ageRangeEnd >= age && (!subject || topic.subject === subject),
+    topic.ageRangeStart <= age && topic.ageRangeEnd >= age && (!subject || topic.subject === subject) && (!domain || topic.domain === domain),
   );
   const available = [];
   const locked = [];
@@ -270,6 +273,41 @@ export function getPlayPath(taxonomy, progress, age, subject = "") {
   return { available, locked, completed };
 }
 
+export function getPlayChapters(taxonomy, progress, age, subject) {
+  const domains = [...new Set(taxonomy.topics
+    .filter((topic) => topic.subject === subject && topic.ageRangeStart <= age && topic.ageRangeEnd >= age)
+    .map((topic) => topic.domain))].sort((left, right) => left.localeCompare(right));
+
+  return domains.map((domain, index) => {
+    const path = getPlayPath(taxonomy, progress, age, subject, domain);
+    return {
+      domain,
+      number: index + 1,
+      total: path.available.length + path.locked.length + path.completed.length,
+      completed: path.completed.length,
+      available: path.available.length,
+      locked: path.locked.length,
+    };
+  });
+}
+
+function retryHintFor(task, copy) {
+  if (task.interaction?.kind === "tap-each") return copy.retryCount;
+  return task.select === "multiple" ? copy.retryMultiple : copy.retrySingle;
+}
+
+function feedbackCard(feedback, copy) {
+  const card = node("div", `preschool-feedback-card${feedback.success ? " preschool-feedback-card-success" : ""}`);
+  card.setAttribute("role", "status");
+  card.setAttribute("aria-live", "polite");
+  card.append(node("span", "preschool-feedback-icon", feedback.success ? "✨" : "🔎"));
+  const words = node("span", "preschool-feedback-words");
+  words.append(node("strong", "", feedback.success ? feedback.text : copy.retryTitle));
+  if (!feedback.success) words.append(node("span", "", feedback.hint ?? feedback.text));
+  card.append(words);
+  return card;
+}
+
 export class PlayView {
   constructor(root, { taxonomy, onAssess, onPractice, onNeedProfile, onExit, onCelebrate }) {
     this.root = root;
@@ -282,6 +320,8 @@ export class PlayView {
     this.lang = globalThis.navigator?.language?.toLocaleLowerCase().startsWith("ro") ? "ro" : "en";
     this.age = 5;
     this.subject = "";
+    this.domain = "";
+    this.resumeTopicId = "";
     this.screen = "path";
     this.selectedTopicId = null;
     this.visible = false;
@@ -296,6 +336,7 @@ export class PlayView {
       if (savedVoice === "on") this.voiceOn = Boolean(globalThis.speechSynthesis && globalThis.SpeechSynthesisUtterance);
       if (savedVoice === "off") this.voiceOn = false;
     } catch { /* Playing still works when browser storage is unavailable. */ }
+    this.defaultAge = this.age;
     this.profile = null;
     this.progressKey = "";
     this.assessmentSessions = new Map();
@@ -306,7 +347,7 @@ export class PlayView {
 
   get copy() { return this.lang === "mix" ? { ...COPY.ro, ...MIX_COPY } : COPY[this.lang]; }
   get activeTopic() { return this.taxonomy.byId.get(this.selectedTopicId); }
-  get path() { return getPlayPath(this.taxonomy, this.profile?.progress ?? {}, this.age, this.subject); }
+  get path() { return getPlayPath(this.taxonomy, this.profile?.progress ?? {}, this.age, this.subject, this.domain); }
 
   setVisible(visible) {
     this.visible = visible;
@@ -316,14 +357,52 @@ export class PlayView {
   setProfile(profile) {
     const progressKey = JSON.stringify(Object.entries(profile?.progress ?? {}).map(([id, entry]) => [id, entry.status, entry.assessment?.verified]).sort());
     const changed = this.profile?.id !== profile?.id || this.profile?.name !== profile?.name || this.progressKey !== progressKey;
-    if (this.profile?.id && this.profile.id !== profile?.id) {
+    if (this.profile?.id !== profile?.id) {
       this.assessmentSessions.clear();
       this.selectedTopicId = null;
       this.screen = "path";
+      this.age = this.defaultAge;
+      this.subject = "";
+      this.domain = "";
+      this.resumeTopicId = "";
+      if (profile?.id) this.restoreResumeState(profile);
     }
     this.profile = profile;
     this.progressKey = progressKey;
     if (changed) this.render();
+  }
+
+  resumeStorageKey(profile = this.profile) {
+    return profile?.id ? `marble-taxonomy:play-resume:${encodeURIComponent(profile.id)}` : "";
+  }
+
+  restoreResumeState(profile) {
+    try {
+      const saved = JSON.parse(globalThis.localStorage.getItem(this.resumeStorageKey(profile)) ?? "null");
+      if (!saved || typeof saved !== "object") return;
+      if (Number.isInteger(saved.age) && saved.age >= PRESCHOOL_MIN_AGE && saved.age <= this.taxonomy.maxAge) this.age = saved.age;
+      if (this.taxonomy.subjects.includes(saved.subject)) this.subject = saved.subject;
+      const domains = this.taxonomy.topics.filter((topic) => topic.subject === this.subject).map(({ domain }) => domain);
+      if (domains.includes(saved.domain)) this.domain = saved.domain;
+      if (this.taxonomy.byId.has(saved.topicId)) this.resumeTopicId = saved.topicId;
+    } catch { /* A missing or malformed resume marker never blocks Play. */ }
+  }
+
+  saveResumeState() {
+    const key = this.resumeStorageKey();
+    if (!key) return;
+    try {
+      globalThis.localStorage.setItem(key, JSON.stringify({
+        age: this.age,
+        subject: this.subject,
+        domain: this.domain,
+        topicId: this.resumeTopicId,
+      }));
+    } catch { /* Resume is optional when browser storage is unavailable. */ }
+  }
+
+  topicToContinue(available) {
+    return available.find(({ id }) => id === this.resumeTopicId) ?? available[0];
   }
 
   stopSpeaking() {
@@ -440,8 +519,12 @@ export class PlayView {
     age.value = String(this.age);
     age.addEventListener("change", () => {
       this.age = Number(age.value);
+      this.defaultAge = this.age;
       this.subject = "";
+      this.domain = "";
+      this.resumeTopicId = "";
       try { globalThis.localStorage.setItem("marble-taxonomy:play-age", String(this.age)); } catch { /* Optional preference. */ }
+      this.saveResumeState();
       this.availableLimit = this.age <= 5 ? 4 : 8;
       this.completedLimit = this.age <= 5 ? 4 : 6;
       this.lockedLimit = this.age <= 5 ? 4 : 6;
@@ -457,6 +540,9 @@ export class PlayView {
     subject.value = this.subject;
     subject.addEventListener("change", () => {
       this.subject = subject.value;
+      this.domain = "";
+      if (!this.taxonomy.topics.some(({ id, subject: topicSubject }) => id === this.resumeTopicId && topicSubject === this.subject)) this.resumeTopicId = "";
+      this.saveResumeState();
       this.availableLimit = this.age <= 5 ? 4 : 8;
       this.completedLimit = this.age <= 5 ? 4 : 6;
       this.lockedLimit = this.age <= 5 ? 4 : 6;
@@ -469,17 +555,24 @@ export class PlayView {
     parentSettings.append(node("summary", "", `🧑 ${c.grownupSettings}`), filters);
     const pathSettings = kidPath ? parentSettings : filters;
 
-    const world = CHILD_WORLDS[this.subject];
+    const world = this.subject ? (CHILD_WORLDS[this.subject] ?? { icon: "✨", en: this.subject, ro: this.subject }) : null;
+    const chapterNumber = this.domain
+      ? getPlayChapters(this.taxonomy, this.profile?.progress ?? {}, this.age, this.subject).find(({ domain }) => domain === this.domain)?.number
+      : null;
     const headingText = kidPath
-      ? (world ? childWorldName(world, this.lang) : c.trailTitle)
+      ? (this.domain ? `${c.chapterLabel} ${chapterNumber ?? ""} · ${this.domain}` : world ? childWorldName(world, this.lang) : c.trailTitle)
       : c.pathTitle;
     const heading = node("h2", "play-instruction", headingText);
-    const introText = kidPath ? (world ? `${childWorldName(world, this.lang)}!` : c.worldsIntro) : c.pathIntro;
+    const introText = kidPath ? (this.subject ? c.chaptersIntro : c.worldsIntro) : c.pathIntro;
     const intro = node("p", "play-path-intro", introText);
     const controls = node("div", "play-map-controls");
     controls.append(button(`🔊 ${c.listen}`, () => this.speak(introText)));
-    if (kidPath && world) controls.append(button(`🗺️ ${c.allWorlds}`, () => {
-      this.subject = "";
+    if (kidPath && this.subject) controls.append(button(`🗺️ ${this.domain ? c.allChapters : c.allWorlds}`, () => {
+      if (this.domain) this.domain = "";
+      else this.subject = "";
+      if (!this.taxonomy.topics.some(({ id, subject: topicSubject, domain }) =>
+        id === this.resumeTopicId && (!this.subject || topicSubject === this.subject) && (!this.domain || domain === this.domain))) this.resumeTopicId = "";
+      this.saveResumeState();
       this.availableLimit = 4;
       this.completedLimit = 4;
       this.lockedLimit = 4;
@@ -517,6 +610,11 @@ export class PlayView {
     board.append(svg);
     if (kidPath && !this.subject) {
       this.renderKidTrailHome(board, available);
+      this.stage.append(pathSettings, heading, intro, controls, board);
+      return;
+    }
+    if (kidPath && this.subject && !this.domain) {
+      this.renderKidChapterHome(board, available);
       this.stage.append(pathSettings, heading, intro, controls, board);
       return;
     }
@@ -562,7 +660,7 @@ export class PlayView {
     if (available.length) {
       const next = node("section", "kid-continue-card");
       next.append(node("p", "play-eyebrow", `✨ ${c.continueTrail}`));
-      const task = this.assignmentNode(available[0], "available");
+      const task = this.assignmentNode(this.topicToContinue(available), "available");
       task.classList.add("path-node-current", "kid-continue-node");
       next.append(task);
       board.append(next);
@@ -577,10 +675,15 @@ export class PlayView {
       );
       if (!topicList.length) continue;
       const completed = topicList.filter((topic) => pathComplete(this.profile?.progress ?? {}, topic.id)).length;
-      const label = c.worldProgress.replace("{done}", String(completed)).replace("{total}", String(topicList.length));
+      const chapterCount = new Set(topicList.map(({ domain }) => domain)).size;
+      const summary = chapterCount === 1 ? c.worldSummaryOne : c.worldSummary;
+      const label = summary.replace("{chapters}", String(chapterCount)).replace("{done}", String(completed)).replace("{total}", String(topicList.length));
       const definition = CHILD_WORLDS[subject] ?? { icon: "✨", en: subject, ro: subject };
       const card = button("", () => {
         this.subject = subject;
+        this.domain = "";
+        if (!topicList.some(({ id }) => id === this.resumeTopicId)) this.resumeTopicId = "";
+        this.saveResumeState();
         this.availableLimit = 4;
         this.completedLimit = 4;
         this.lockedLimit = 4;
@@ -602,6 +705,50 @@ export class PlayView {
     }
     worlds.append(grid);
     board.append(worlds);
+  }
+
+  renderKidChapterHome(board, available) {
+    const c = this.copy;
+    const chapters = getPlayChapters(this.taxonomy, this.profile?.progress ?? {}, this.age, this.subject);
+    const topic = this.topicToContinue(available);
+    if (topic) {
+      const next = node("section", "kid-continue-card");
+      next.append(node("p", "play-eyebrow", `✨ ${c.continueTrail}`));
+      const task = this.assignmentNode(topic, "available");
+      task.classList.add("path-node-current", "kid-continue-node");
+      next.append(task);
+      board.append(next);
+    }
+
+    const section = node("section", "kid-worlds kid-chapters");
+    section.append(node("h3", "path-section-title", c.chooseChapter));
+    const grid = node("div", "kid-world-grid");
+    for (const chapter of chapters) {
+      const label = c.chapterProgress.replace("{done}", String(chapter.completed)).replace("{total}", String(chapter.total));
+      const card = button("", () => {
+        this.domain = chapter.domain;
+        if (!this.taxonomy.topics.some(({ id, domain, subject }) => id === this.resumeTopicId && domain === this.domain && subject === this.subject)) this.resumeTopicId = "";
+        this.saveResumeState();
+        this.availableLimit = 4;
+        this.completedLimit = 4;
+        this.lockedLimit = 4;
+        this.scrollToTop();
+        this.render();
+      }, "kid-world-card kid-chapter-card");
+      card.append(
+        node("span", "kid-world-icon", chapter.available ? "🌟" : chapter.completed === chapter.total ? "✅" : "🔒"),
+        node("strong", "kid-world-title", `${c.chapterLabel} ${chapter.number}: ${chapter.domain}`),
+        node("span", "kid-world-count", label),
+      );
+      const progress = document.createElement("progress");
+      progress.max = chapter.total || 1;
+      progress.value = chapter.completed;
+      progress.setAttribute("aria-label", label);
+      card.append(progress);
+      grid.append(card);
+    }
+    section.append(grid);
+    board.append(section);
   }
 
   renderKidWorldProgress(available, locked, completed) {
@@ -679,6 +826,8 @@ export class PlayView {
           return;
         }
         this.selectedTopicId = topic.id;
+        this.resumeTopicId = topic.id;
+        this.saveResumeState();
         this.screen = "challenge";
         this.scrollToTop();
         this.render();
@@ -731,8 +880,10 @@ export class PlayView {
     this.assessmentSessions.delete(topic.id);
     this.screen = "path";
     this.selectedTopicId = null;
+    this.resumeTopicId = "";
     if (assessment.kind === "choice") this.onAssess(topic.id, evidence);
     else this.onPractice(topic.id, observation);
+    this.saveResumeState();
     this.onCelebrate();
     this.scrollToTop();
     this.render();
@@ -799,11 +950,7 @@ export class PlayView {
     card.append(node("h4", "preschool-question", this.missionPrompt(task)));
     if (this.lang === "ro" && task.language === "en-US") card.append(node("p", "assignment-language-note", c.sourceEnglish));
     if (session.feedback) {
-      const previousFeedback = node("p", "preschool-feedback child-assessment-feedback", session.feedback.text);
-      previousFeedback.classList.toggle("preschool-feedback-success", session.feedback.success);
-      previousFeedback.setAttribute("role", "status");
-      previousFeedback.setAttribute("aria-live", "polite");
-      card.append(previousFeedback);
+      card.append(feedbackCard(session.feedback, c));
     }
 
     if (assessment.kind === "guided") {
@@ -837,10 +984,7 @@ export class PlayView {
 
     const choices = node("div", "preschool-choice-grid child-assessment-choices");
     const displayChoices = session.choiceOrders[session.completedTasks].map((index) => task.choices[index]);
-    const feedback = node("p", "preschool-feedback child-assessment-feedback");
-    feedback.setAttribute("role", "status");
-    feedback.setAttribute("aria-live", "polite");
-    const choiceButtons = displayChoices.map((choice, index) => {
+    displayChoices.forEach((choice, index) => {
       const option = node("button", "preschool-choice");
       option.type = "button";
       option.setAttribute("aria-pressed", String(session.selectedChoices.includes(index)));
@@ -853,19 +997,11 @@ export class PlayView {
           selected.clear();
           selected.add(index);
           session.selectedChoices = [...selected];
-          for (const [candidateIndex, candidate] of choiceButtons.entries()) {
-            const pressed = candidateIndex === index;
-            candidate.setAttribute("aria-pressed", String(pressed));
-            candidate.classList.toggle("preschool-choice-selected", pressed);
-            candidate.classList.toggle("preschool-choice-correct", pressed && displayChoices[index]?.correct === true);
-            candidate.classList.toggle("preschool-choice-incorrect", pressed && displayChoices[index]?.correct !== true);
-          }
           if (displayChoices[index]?.correct === true) {
             this.advanceMission(topic, session, c.missionPass);
           } else {
-            session.feedback = { success: false, text: c.missionRetry };
-            feedback.textContent = c.missionRetry;
-            feedback.classList.remove("preschool-feedback-success");
+            session.feedback = { success: false, text: c.missionRetry, hint: retryHintFor(task, c) };
+            this.render();
             if (this.voiceOn) this.speak(c.missionRetry);
           }
           return;
@@ -873,26 +1009,17 @@ export class PlayView {
         else selected.add(index);
         session.selectedChoices = [...selected];
         session.feedback = null;
-        for (const [candidateIndex, candidate] of choiceButtons.entries()) {
-          const pressed = selected.has(candidateIndex);
-          candidate.setAttribute("aria-pressed", String(pressed));
-          candidate.classList.toggle("preschool-choice-selected", pressed);
-        }
-        feedback.textContent = "";
-        feedback.classList.remove("preschool-feedback-success");
-        if (task.select === "multiple") checkAnswer.disabled = selected.size < (task.requiredCount ?? 1);
+        this.render();
       });
       choices.append(option);
-      return option;
     });
 
     const checkAnswer = button(c.missionCheck, () => {
       const enoughChoices = session.selectedChoices.length >= (task.requiredCount ?? 1);
       const allCorrect = enoughChoices && session.selectedChoices.every((index) => displayChoices[index]?.correct === true);
       if (!allCorrect) {
-        session.feedback = { success: false, text: c.missionRetry };
-        feedback.textContent = c.missionRetry;
-        feedback.classList.remove("preschool-feedback-success");
+        session.feedback = { success: false, text: c.missionRetry, hint: retryHintFor(task, c) };
+        this.render();
         if (this.voiceOn) this.speak(c.missionRetry);
         return;
       }
@@ -900,7 +1027,7 @@ export class PlayView {
       this.advanceMission(topic, session, c.missionPass);
     }, "play-button play-finish child-assessment-check");
     checkAnswer.disabled = session.selectedChoices.length < (task.requiredCount ?? 1);
-    card.append(choices, feedback);
+    card.append(choices);
     if (task.select === "multiple") card.append(checkAnswer);
     return card;
   }
@@ -984,7 +1111,7 @@ export class PlayView {
           this.advanceMission(this.activeTopic, session, c.missionPass);
           return;
         }
-        session.feedback = { success: false, text: c.missionRetry };
+        session.feedback = { success: false, text: c.missionRetry, hint: retryHintFor(task, c) };
         this.render();
         if (this.voiceOn) this.speak(c.missionRetry);
       }, "preschool-choice counting-answer");
@@ -994,10 +1121,7 @@ export class PlayView {
     }
     stage.append(answers);
     if (session.feedback) {
-      const feedback = node("p", "preschool-feedback child-assessment-feedback", session.feedback.text);
-      feedback.setAttribute("role", "status");
-      feedback.setAttribute("aria-live", "polite");
-      stage.append(feedback);
+      stage.append(feedbackCard(session.feedback, c));
     }
     return stage;
   }

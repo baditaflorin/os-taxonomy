@@ -65,6 +65,8 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .kid-world-icon { grid-row: span 2; font-size: 38px; text-align: center; }
 .kid-world-title { font-size: 17px; line-height: 1.2; }
 .kid-world-count { color: #596858; font-size: 13px; font-weight: 700; }
+.kid-chapter-card { background: linear-gradient(125deg, #fff, #f7ffed); }
+.kid-chapter-card .kid-world-count { line-height: 1.35; }
 .kid-world-card progress, .kid-world-progress progress { width: 100%; height: 12px; accent-color: #79ad4b; }
 .kid-world-card progress { grid-column: 2; }
 .kid-world-progress { display: grid; gap: 7px; max-width: 820px; margin: 0 auto 16px; padding: 12px 16px; border: 1px solid #e2ebd9; border-radius: 16px; color: #536650; background: #fff; text-align: center; }
@@ -125,6 +127,13 @@ button.path-node:hover { background: #ecf9cf; transform: translateY(-2px); }
 .preschool-choice-label { font-size: 17px; font-weight: 800; line-height: 1.25; }
 .preschool-feedback { min-height: 28px; margin: 14px 0 0; color: #775720; font-size: 18px; font-weight: 800; line-height: 1.4; text-align: center; }
 .preschool-feedback-success { color: #247044; }
+.preschool-feedback-card { display: flex; align-items: center; gap: 13px; width: min(100%, 680px); box-sizing: border-box; margin: 14px auto; padding: 14px 18px; border: 2px solid #ead99c; border-radius: 20px; color: #54471f; background: linear-gradient(110deg, #fff8d9, #fff); box-shadow: 0 4px 0 #eee4c4; }
+.preschool-feedback-icon { display: grid; flex: 0 0 46px; place-items: center; width: 46px; height: 46px; border-radius: 16px; background: #ffefae; font-size: 28px; }
+.preschool-feedback-words { display: grid; gap: 3px; text-align: left; line-height: 1.4; }
+.preschool-feedback-words strong { font-size: 16px; }
+.preschool-feedback-words > span { font-size: 15px; font-weight: 650; }
+.preschool-feedback-card-success { border-color: #b6dec6; color: #247044; background: linear-gradient(110deg, #e8f8e9, #fff); box-shadow: 0 4px 0 #d1e9d8; }
+.preschool-feedback-card-success .preschool-feedback-icon { background: #d0f0dd; }
 .child-assessment-progress { margin: 14px 0 0; color: #397249; font-size: 16px; font-weight: 900; text-align: center; }
 .child-assessment-instruction { margin: -7px 0 14px; text-align: center; }
 .child-assessment-choices { margin-bottom: 14px; }
@@ -188,6 +197,8 @@ body.kid-challenge-mode .play-finish { min-height: 68px; font-size: 19px; }
   .kid-world-card { grid-template-columns: 42px minmax(0, 1fr); min-height: 108px; padding: 10px; }
   .kid-world-icon { font-size: 32px; }
   .kid-world-title { font-size: 15px; }
+  .preschool-feedback-card { align-items: flex-start; padding: 11px 12px; }
+  .preschool-feedback-icon { flex-basis: 40px; width: 40px; height: 40px; font-size: 25px; }
   .path-prerequisite { line-height: 1.4; }
   .preschool-challenge { padding: 16px 12px; border-radius: 24px; }
   .preschool-challenge-hero { align-items: flex-start; gap: 12px; }

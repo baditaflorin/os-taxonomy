@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { getEarnedStars, getPlayPath, missionTextForLanguage, playText } from '../explorer/src/play-view.js';
+import { getEarnedStars, getPlayChapters, getPlayPath, missionTextForLanguage, playText } from '../explorer/src/play-view.js';
 import { buildTaxonomy } from '../explorer/src/taxonomy.js';
 
 const { topics } = JSON.parse(readFileSync(new URL('../data/topics.json', import.meta.url)));
@@ -33,6 +33,20 @@ test('Play assignments come from the taxonomy quick assessments for the selected
     assert.ok(topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5, topic.name);
     assert.ok(topic.assessmentPrompt, topic.name);
     assert.equal(taxonomy.prerequisites.get(topic.id).filter(({ strength }) => strength === 'hard').length, 0, topic.name);
+  }
+});
+
+test('kid chapters group the age-filtered path by its existing taxonomy domains', () => {
+  for (const subject of taxonomy.subjects) {
+    const chapters = getPlayChapters(taxonomy, {}, 5, subject);
+    const expected = topics.filter((topic) => topic.subject === subject && topic.ageRangeStart <= 5 && topic.ageRangeEnd >= 5);
+    assert.equal(chapters.reduce((sum, chapter) => sum + chapter.total, 0), expected.length, subject);
+    assert.equal(new Set(chapters.map(({ domain }) => domain)).size, chapters.length, subject);
+    assert.ok(chapters.every(({ domain, number, total }) => domain && number > 0 && total > 0), subject);
+    for (const chapter of chapters) {
+      const path = getPlayPath(taxonomy, {}, 5, subject, chapter.domain);
+      assert.equal(path.available.length + path.locked.length + path.completed.length, chapter.total, `${subject} / ${chapter.domain}`);
+    }
   }
 });
 
